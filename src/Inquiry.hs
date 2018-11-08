@@ -14,13 +14,11 @@ import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, wit
 import qualified Brick.Widgets.Edit as E
 import           Control.Applicative ((<|>))
 import           Control.Monad (void)
-import           Data.Text (unpack, Text)
-import           Data.Text.Zipper (clearZipper)
+import           Data.Text (Text)
 import qualified Graphics.Vty as V
+import           Inquiry.Commands (continue, request, insertMode, exMode, normalMode, quit)
 import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, recentReqs, urlInput)
-import           Lens.Micro.Platform (view, over, set)
-import           System.IO (hGetContents)
-import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
+import           Lens.Micro.Platform (view, set)
 
 mainArea :: [Request] -> Widget a
 mainArea [] = center $ str "No recent requests!"
@@ -40,38 +38,19 @@ drawUI state = [ui]
             Insert -> txt "-- INSERT --"
             Normal -> txt " "
 
-curl :: Request -> IO ()
-curl req = do
-  let cmd = (proc "curl" [unpack $ view url req]){ std_out = CreatePipe }
-  withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
-    output <- hGetContents stdout
-    putStrLn output
-
-request :: AppState -> IO AppState
-request state = do
-  let req = view currentRequest state
-  putStrLn $ "Running request: " <> show req
-  curl req
-  putStrLn "Press Return to return..."
-  _ <- getLine
-  return $
-    set (currentRequest . url) "" $
-    over urlInput (E.applyEdit clearZipper) $
-    over recentReqs (<> [req]) state
-
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
-exMap = [(V.KEsc, M.continue . set mode Normal)
-        ,(V.KChar 'q', M.halt)
+exMap = [(V.KEsc, normalMode)
+        ,(V.KChar 'q', quit)
         ]
 
 insertMap :: [(V.Key, AppState -> EventM n (Next AppState))]
-insertMap = [(V.KEsc, M.continue . set mode Normal)
-            ,(V.KEnter, M.suspendAndResume . request)
+insertMap = [(V.KEsc, normalMode)
+            ,(V.KEnter, request)
             ]
 
 normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
-normalMap = [(V.KChar ':', M.continue . set mode Ex)
-            ,(V.KChar 'i', M.continue . set mode Insert)
+normalMap = [(V.KChar ':', exMode)
+            ,(V.KChar 'i', insertMode)
             ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
@@ -87,10 +66,10 @@ onEvent state (VtyEvent ev@(V.EvKey key _)) = do
           -- TODO: Perhaps handleEventLensed
           editor <- E.handleEditorEvent ev (view urlInput s')
           let input = foldr (<>) mempty $ E.getEditContents editor
-          M.continue $
+          continue $
             set (currentRequest . url) input $
             set urlInput editor s'
-onEvent state _ = M.continue state
+onEvent state _ = continue state
 
 app :: IO ()
 app = void $ M.defaultMain app' initialState
