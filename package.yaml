@@ -1,0 +1,58 @@
+name:                inquiry
+version:             0.1.0.0
+github:              "githubuser/inquiry"
+license:             BSD3
+author:              "Martin Øinæs Myrseth"
+maintainer:          "myrseth@gmail.com"
+copyright:           "2018 Martin Øinæs Myrseth"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/inquiry#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+ghc-options:
+  - -Wall
+  - -Werror
+
+library:
+  source-dirs: src
+  dependencies:
+    - brick
+    - microlens-platform
+    - text
+    - text-zipper
+    - vty
+
+executables:
+  inquiry:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - inquiry
+
+tests:
+  inquiry-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - inquiry
