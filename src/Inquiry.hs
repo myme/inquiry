@@ -30,6 +30,7 @@ insertMap = [(V.KEsc, normalMode)
 normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 normalMap = [(V.KChar ':', exMode)
             ,(V.KChar 'i', insertMode)
+            ,(V.KChar 'q', quit)
             ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
