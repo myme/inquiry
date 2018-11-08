@@ -16,14 +16,14 @@ import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, wit
 import qualified Brick.Widgets.Edit as E
 import           Control.Applicative ((<|>))
 import           Control.Monad (void)
-import           Data.Text (unpack, pack, toUpper, Text)
+import           Data.Text (unpack, Text)
 import           Data.Text.Zipper (clearZipper)
 import qualified Graphics.Vty as V
 import           Lens.Micro.Platform (over, set, view, makeLenses)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
-data EditMode = Normal | Insert deriving (Eq, Show)
+data EditMode = Ex | Normal | Insert deriving (Eq, Show)
 
 data Method = GET | POST deriving (Show)
 
@@ -56,7 +56,10 @@ drawUI state = [ui]
           inInsert = view mode state == Insert
           editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (view urlInput state)
           input = padRight Max editor
-          status = txt $ toUpper $ pack $ show $ view mode state
+          status = case view mode state of
+            Ex -> txt ":"
+            Insert -> txt "-- INSERT --"
+            Normal -> txt " "
 
 isKey :: V.Key -> BrickEvent n e -> Bool
 isKey k (VtyEvent (V.EvKey k' _)) = k == k'
@@ -81,26 +84,31 @@ request state = do
     over urlInput (E.applyEdit clearZipper) $
     over recentReqs (<> [req]) state
 
+exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
+exMap = [(V.KEsc, M.continue . set mode Normal)]
+
 insertMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 insertMap = [(V.KEsc, M.continue . set mode Normal)
             ,(V.KEnter, M.suspendAndResume . request)
             ]
 
 normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
-normalMap = [(V.KChar 'i', M.continue . set mode Insert)
+normalMap = [(V.KChar ':', M.continue . set mode Ex)
+            ,(V.KChar 'i', M.continue . set mode Insert)
             ,(V.KChar 'q', M.halt)
             ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
 onEvent state (VtyEvent ev@(V.EvKey key _)) = do
   let action = case view mode state of
+        Ex     -> lookup key exMap
         Normal -> lookup key normalMap
         Insert -> lookup key insertMap <|> handleEditor
   case action of
     Nothing      -> M.continue state
     Just action' -> action' state
   where handleEditor = Just $ \s' -> do
-          -- Perhaps handleEventLensed
+          -- TODO: Perhaps handleEventLensed
           editor <- E.handleEditorEvent ev (view urlInput s')
           let input = foldr (<>) mempty $ E.getEditContents editor
           M.continue $
