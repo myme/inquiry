@@ -16,8 +16,9 @@ import           Data.Text (Text)
 import qualified Graphics.Vty as V
 import           Inquiry.Commands (continue, request, insertMode, exMode, normalMode, nextHistoryItem, quit)
 import           Inquiry.Input (input)
-import           Inquiry.UI (drawUI)
 import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, urlInput)
+import           Inquiry.UI (drawUI)
+import           Inquiry.Zipper (emptyZipper)
 import           Lens.Micro.Platform (view, set)
 
 -- | Ex (Command) mode keymap
@@ -71,6 +72,6 @@ app = void $ M.defaultMain app' initialState
         initialState = AppState
           { _currentRequest = Request GET initialInput
           , _mode = Normal
-          , _history = []
+          , _requestHistory = emptyZipper
           , _urlInput = input "urlInput" initialInput
           }

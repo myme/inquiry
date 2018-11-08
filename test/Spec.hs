@@ -1,2 +1,6 @@
+import Test.Hspec
+
+import Inquiry.Test.Zipper
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = hspec zipperTests

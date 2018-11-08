@@ -15,13 +15,13 @@ module Inquiry.Commands
 import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
 import qualified Brick.Widgets.Edit as E
-import           Data.List (uncons)
 import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Data.Text.Zipper (clearZipper)
 import           Inquiry.Input (setInput)
-import           Inquiry.Types (history, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
-import           Lens.Micro.Platform ((<&>), (%~), (&), over, view, set, _1)
+import           Inquiry.Types (requestHistory, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
+import           Inquiry.Zipper (insertZipper, nextZipper, peekZipper)
+import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
@@ -48,12 +48,11 @@ normalMode = M.continue . set mode Normal
 -- | Update the navigator with the next request history item.
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem state = M.continue $ do
-  let reqs = view history state
-      (current, rest) = fromMaybe ("http://", []) $
-        uncons reqs <&> _1 %~ view url
+  let reqs = view requestHistory state
+      current = peekZipper (nextZipper reqs) <&> view url
   state &
-    over urlInput (setInput current) .
-    set history rest
+    over urlInput (setInput $ fromMaybe "http://" current) .
+    set requestHistory reqs
 
 curl :: Request -> IO ()
 curl req = do
@@ -74,4 +73,4 @@ request state = M.suspendAndResume $ do
     set (currentRequest . url) "" $
     set mode Normal $
     over urlInput (E.applyEdit clearZipper) $
-    over history (<> [req]) state
+    over requestHistory (insertZipper req) state
