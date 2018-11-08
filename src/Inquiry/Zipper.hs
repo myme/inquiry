@@ -16,8 +16,8 @@ data Zipper a = Zipper { zipperCurrent :: Maybe a
                        } deriving (Eq, Functor, Show)
 
 instance Foldable Zipper where
-  foldMap _ (Zipper Nothing _ _) = mempty
-  foldMap f (Zipper (Just c) p n) = foldMap f (reverse p) <> f c <> foldMap f n
+  foldMap f (Zipper Nothing ps ns) = foldMap f (reverse ps) <> foldMap f ns
+  foldMap f (Zipper (Just c) ps ns) = foldMap f (reverse ps) <> f c <> foldMap f ns
 
 emptyZipper :: Zipper a
 emptyZipper = Zipper { zipperCurrent = Nothing

@@ -48,9 +48,16 @@ zipperTests = describe "Inquiry.Zipper" $ do
       popZipper z3 `shouldBe` (Just "baz", z2)
       popZipper (prevZipper z3) `shouldBe` (Just "bar", insertZipper "baz" z1)
 
+  describe "Foldable" $ do
     it "can create list with foldr" $ do
-      let list = [1 .. 10] :: [Int]
+      let list = ["foo", "bar", "baz"]
           zipper = foldr insertZipper emptyZipper $ reverse list
+      foldr (:) [] zipper `shouldBe` foldr (:) [] list
+
+    it "can ignores Nothing cursor" $ do
+      let list = ["foo", "bar"]
+          zipper = nextZipper $ foldr insertZipper emptyZipper $ reverse list
+      peekZipper zipper `shouldBe` Nothing
       foldr (:) [] zipper `shouldBe` foldr (:) [] list
 
   describe "properties" $ do
