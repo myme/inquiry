@@ -50,5 +50,6 @@ request state = M.suspendAndResume $ do
   _ <- getLine
   return $
     set (currentRequest . url) "" $
+    set mode Normal $
     over urlInput (E.applyEdit clearZipper) $
     over recentReqs (<> [req]) state
