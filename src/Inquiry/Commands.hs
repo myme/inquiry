@@ -8,16 +8,20 @@ module Inquiry.Commands
   , exMode
   , insertMode
   , normalMode
+  , nextHistoryItem
   , request
   ) where
 
 import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
 import qualified Brick.Widgets.Edit as E
+import           Data.List (uncons)
+import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Data.Text.Zipper (clearZipper)
-import           Inquiry.Types (Request, recentReqs, urlInput, url, currentRequest, AppState, EditMode(..), mode)
-import           Lens.Micro.Platform (over, view, set)
+import           Inquiry.Input (setInput)
+import           Inquiry.Types (history, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
+import           Lens.Micro.Platform ((<&>), (%~), (&), over, view, set, _1)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
@@ -41,6 +45,16 @@ insertMode = M.continue . set mode Insert
 normalMode :: AppState -> EventM n (Next AppState)
 normalMode = M.continue . set mode Normal
 
+-- | Update the navigator with the next request history item.
+nextHistoryItem :: AppState -> EventM n (Next AppState)
+nextHistoryItem state = M.continue $ do
+  let reqs = view history state
+      (current, rest) = fromMaybe ("http://", []) $
+        uncons reqs <&> _1 %~ view url
+  state &
+    over urlInput (setInput current) .
+    set history rest
+
 curl :: Request -> IO ()
 curl req = do
   let cmd = (proc "curl" [unpack $ view url req]){ std_out = CreatePipe }
@@ -60,4 +74,4 @@ request state = M.suspendAndResume $ do
     set (currentRequest . url) "" $
     set mode Normal $
     over urlInput (E.applyEdit clearZipper) $
-    over recentReqs (<> [req]) state
+    over history (<> [req]) state

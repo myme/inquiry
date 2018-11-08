@@ -8,7 +8,7 @@ module Inquiry.Types
   , method
   , url
   , currentRequest
-  , recentReqs
+  , history
   , urlInput
   , mode
   ) where
@@ -29,7 +29,7 @@ instance Show Request where
   show (Request m u) = show m <> " " <> unpack u
 
 data AppState = AppState { _currentRequest :: Request
-                         , _recentReqs :: [Request]
+                         , _history :: [Request]
                          , _urlInput :: E.Editor Text Text
                          , _mode :: EditMode
                          } deriving (Show)

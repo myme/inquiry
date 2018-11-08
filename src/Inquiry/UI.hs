@@ -11,7 +11,7 @@ import           Brick.Widgets.Center (hCenter, center)
 import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, withBorderStyle, (<=>))
 import qualified Brick.Widgets.Edit as E
 import           Data.Text (Text)
-import           Inquiry.Types (mode, urlInput, recentReqs, AppState, EditMode(..), Request)
+import           Inquiry.Types (mode, urlInput, history, AppState, EditMode(..), Request)
 import           Lens.Micro.Platform (view)
 
 mainArea :: [Request] -> Widget a
@@ -22,7 +22,7 @@ mainArea recent = center $
 drawUI :: AppState -> [Widget Text]
 drawUI state = [ui]
     where ui = withBorderStyle unicode
-             $ title <=> border input <=> mainArea (view recentReqs state) <=> status
+             $ title <=> border input <=> mainArea (view history state) <=> status
           title = txt " " <=> hCenter (txt "inQuiry")
           inInsert = view mode state == Insert
           editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (view urlInput state)
