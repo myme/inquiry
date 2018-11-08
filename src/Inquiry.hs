@@ -16,7 +16,7 @@ import           Data.Text (Text)
 import qualified Graphics.Vty as V
 import           Inquiry.Commands (prevHistoryItem, continue, request, insertMode, exMode, normalMode, nextHistoryItem, quit)
 import           Inquiry.Input (input)
-import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, urlInput)
+import           Inquiry.Types (AppState(..), EditMode(..), Method(..), mode, urlInput)
 import           Inquiry.UI (drawUI)
 import           Inquiry.Zipper (emptyZipper)
 import           Lens.Micro.Platform (view, set)
@@ -52,12 +52,8 @@ onEvent state (VtyEvent ev@(V.EvKey key _)) = do
     Nothing      -> M.continue state
     Just action' -> action' state
   where handleEditor = Just $ \s' -> do
-          -- TODO: Perhaps handleEventLensed
           editor <- E.handleEditorEvent ev (view urlInput s')
-          let input' = foldr (<>) mempty $ E.getEditContents editor
-          continue $
-            set (currentRequest . url) input' $
-            set urlInput editor s'
+          continue $ set urlInput editor s'
 onEvent state _ = continue state
 
 app :: IO ()
@@ -69,10 +65,9 @@ app = void $ M.defaultMain app' initialState
           , M.appHandleEvent = onEvent
           , M.appStartEvent = return
           }
-        initialInput = "http://"
         initialState = AppState
-          { _currentRequest = Request GET initialInput
+          { _currentMethod = GET
           , _mode = Normal
           , _requestHistory = emptyZipper
-          , _urlInput = input "urlInput" initialInput
+          , _urlInput = input "urlInput" "http://"
           }

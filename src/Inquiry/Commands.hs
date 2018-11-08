@@ -17,9 +17,9 @@ import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
 import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
-import           Inquiry.Input (setInput)
-import           Inquiry.Types (requestHistory, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
-import           Inquiry.Zipper (insertZipper, nextZipper, peekZipper, prevZipper)
+import           Inquiry.Input (getInput, setInput)
+import           Inquiry.Types (Method(..), Request(..), requestHistory, Request, urlInput, url, AppState, EditMode(..), mode)
+import           Inquiry.Zipper (appendZipper, nextZipper, peekZipper, prevZipper)
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
@@ -74,13 +74,12 @@ curl req = do
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
-  let req = view currentRequest state
+  let req = Request GET (getInput $ view urlInput state)
   putStrLn $ "Running request: " <> show req
   curl req
   putStrLn "Press Return to return..."
   _ <- getLine
   return $
-    set (currentRequest . url) "http://" $
     set mode Normal $
     over urlInput (setInput "http://") $
-    over requestHistory (insertZipper req) state
+    over requestHistory (appendZipper req) state

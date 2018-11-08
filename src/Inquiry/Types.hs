@@ -7,7 +7,7 @@ module Inquiry.Types
   , Request(..)
   , method
   , url
-  , currentRequest
+  , currentMethod
   , requestHistory
   , urlInput
   , mode
@@ -29,7 +29,7 @@ data Request = Request { _method :: Method
 instance Show Request where
   show (Request m u) = show m <> " " <> unpack u
 
-data AppState = AppState { _currentRequest :: Request
+data AppState = AppState { _currentMethod :: Method
                          , _requestHistory :: Zipper Request
                          , _urlInput :: E.Editor Text Text
                          , _mode :: EditMode
