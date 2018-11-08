@@ -21,7 +21,7 @@ import           Data.Text.Zipper (clearZipper)
 import qualified Graphics.Vty as V
 import           Lens.Micro.Platform (over, set, view, makeLenses)
 
-data Mode = Normal | Insert deriving (Eq, Show)
+data EditMode = Normal | Insert deriving (Eq, Show)
 
 data Method = GET | POST deriving (Show)
 
@@ -35,7 +35,7 @@ instance Show Request where
 data AppState = AppState { _currentRequest :: Request
                          , _recentReqs :: [Request]
                          , _urlInput :: E.Editor Text Text
-                         , _mode :: Mode
+                         , _mode :: EditMode
                          } deriving (Show)
 
 makeLenses ''Request
