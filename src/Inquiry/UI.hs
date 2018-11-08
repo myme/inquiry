@@ -10,6 +10,7 @@ import           Brick.Widgets.Border.Style (unicode)
 import           Brick.Widgets.Center (hCenter, center)
 import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, withBorderStyle, (<=>))
 import qualified Brick.Widgets.Edit as E
+import           Data.Foldable (toList)
 import           Data.Text (Text)
 import           Inquiry.Types (mode, urlInput, requestHistory, AppState, EditMode(..), Request)
 import           Inquiry.Zipper (Zipper, emptyZipper)
@@ -18,7 +19,7 @@ import           Lens.Micro.Platform (view)
 mainArea :: Zipper Request -> Widget a
 mainArea recent | recent == emptyZipper = center $ txt "No recent requests!"
                 | otherwise = center $
-  txt "Recent requests:" <=> foldr ((<=>) . str . show) emptyWidget recent
+                    txt "Recent requests:" <=> foldr ((<=>) . str . show) emptyWidget (reverse $ toList recent)
 
 drawUI :: AppState -> [Widget Text]
 drawUI state = [ui]
