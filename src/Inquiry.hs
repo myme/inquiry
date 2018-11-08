@@ -20,6 +20,8 @@ import           Data.Text (unpack, pack, toUpper, Text)
 import           Data.Text.Zipper (clearZipper)
 import qualified Graphics.Vty as V
 import           Lens.Micro.Platform (over, set, view, makeLenses)
+import           System.IO (hGetContents)
+import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
 data EditMode = Normal | Insert deriving (Eq, Show)
 
@@ -60,10 +62,19 @@ isKey :: V.Key -> BrickEvent n e -> Bool
 isKey k (VtyEvent (V.EvKey k' _)) = k == k'
 isKey _ _ = False
 
+curl :: Request -> IO ()
+curl req = do
+  let cmd = (proc "curl" [unpack $ view url req]){ std_out = CreatePipe }
+  withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
+    output <- hGetContents stdout
+    putStrLn output
+
 request :: AppState -> IO AppState
 request state = do
   let req = view currentRequest state
   putStrLn $ "Running request: " <> show req
+  curl req
+  putStrLn "Press Return to return..."
   _ <- getLine
   return $
     set (currentRequest . url) "" $
