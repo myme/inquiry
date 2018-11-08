@@ -1,6 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 module Inquiry
     ( app
@@ -19,29 +17,10 @@ import           Control.Monad (void)
 import           Data.Text (unpack, Text)
 import           Data.Text.Zipper (clearZipper)
 import qualified Graphics.Vty as V
-import           Lens.Micro.Platform (over, set, view, makeLenses)
+import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, recentReqs, urlInput)
+import           Lens.Micro.Platform (view, over, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
-
-data EditMode = Ex | Normal | Insert deriving (Eq, Show)
-
-data Method = GET | POST deriving (Show)
-
-data Request = Request { _method :: Method
-                       , _url :: Text
-                       }
-
-instance Show Request where
-  show (Request m u) = show m <> " " <> unpack u
-
-data AppState = AppState { _currentRequest :: Request
-                         , _recentReqs :: [Request]
-                         , _urlInput :: E.Editor Text Text
-                         , _mode :: EditMode
-                         } deriving (Show)
-
-makeLenses ''Request
-makeLenses ''AppState
 
 mainArea :: [Request] -> Widget a
 mainArea [] = center $ str "No recent requests!"
@@ -60,10 +39,6 @@ drawUI state = [ui]
             Ex -> txt ":"
             Insert -> txt "-- INSERT --"
             Normal -> txt " "
-
-isKey :: V.Key -> BrickEvent n e -> Bool
-isKey k (VtyEvent (V.EvKey k' _)) = k == k'
-isKey _ _ = False
 
 curl :: Request -> IO ()
 curl req = do
