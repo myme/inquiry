@@ -15,6 +15,7 @@ import           Control.Monad (void)
 import           Data.Text (Text)
 import qualified Graphics.Vty as V
 import           Inquiry.Commands (continue, request, insertMode, exMode, normalMode, quit)
+import           Inquiry.Input (input)
 import           Inquiry.UI (drawUI)
 import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, urlInput)
 import           Lens.Micro.Platform (view, set)
@@ -50,9 +51,9 @@ onEvent state (VtyEvent ev@(V.EvKey key _)) = do
   where handleEditor = Just $ \s' -> do
           -- TODO: Perhaps handleEventLensed
           editor <- E.handleEditorEvent ev (view urlInput s')
-          let input = foldr (<>) mempty $ E.getEditContents editor
+          let input' = foldr (<>) mempty $ E.getEditContents editor
           continue $
-            set (currentRequest . url) input $
+            set (currentRequest . url) input' $
             set urlInput editor s'
 onEvent state _ = continue state
 
@@ -65,9 +66,10 @@ app = void $ M.defaultMain app' initialState
           , M.appHandleEvent = onEvent
           , M.appStartEvent = return
           }
+        initialInput = "http://"
         initialState = AppState
-          { _currentRequest = Request GET "http://"
+          { _currentRequest = Request GET initialInput
           , _mode = Normal
           , _recentReqs = []
-          , _urlInput = E.editorText "urlInput" (Just 1) ""
+          , _urlInput = input "urlInput" initialInput
           }
