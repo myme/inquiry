@@ -8,6 +8,21 @@ import Inquiry.Zipper
 zipperTests :: SpecWith ()
 zipperTests = describe "Inquiry.Zipper" $ do
   describe "tests" $ do
+    it "emptyZipper is empty" $
+      peekZipper emptyZipper `shouldBe` (Nothing :: Maybe Int)
+
+    it "can insert one element" $ do
+      let z = insertZipper "foo" emptyZipper
+      peekZipper z `shouldBe` Just "foo"
+
+    it "can navigate off the front" $ do
+      let z = prevZipper $ insertZipper "foo" emptyZipper
+      peekZipper z `shouldBe` Nothing
+
+    it "can navigate off the back" $ do
+      let z = nextZipper $ insertZipper "foo" emptyZipper
+      peekZipper z `shouldBe` Nothing
+
     it "manually inserting elements and get back list" $ do
       let z1 = insertZipper "foo" emptyZipper
           z2 = insertZipper "bar" z1
@@ -21,9 +36,9 @@ zipperTests = describe "Inquiry.Zipper" $ do
           z3 = prevZipper z2
           z4 = nextZipper z3
       peekZipper z3 `shouldBe` Just "foo"
-      prevZipper z3 `shouldBe` z3
+      prevZipper z3 `shouldBe` Zipper Nothing [] ["foo", "bar"]
       peekZipper z4 `shouldBe` Just "bar"
-      nextZipper z4 `shouldBe` z4
+      nextZipper z4 `shouldBe` Zipper Nothing ["bar", "foo"] []
 
     it "can pop items" $ do
       let z1 = insertZipper "foo" emptyZipper

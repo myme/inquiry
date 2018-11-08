@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 
 module Inquiry.Zipper
-  ( Zipper
+  ( Zipper(..)
   , emptyZipper
   , insertZipper
   , nextZipper
@@ -36,12 +36,12 @@ peekZipper (Zipper c _ _) = c
 
 prevZipper :: Zipper a -> Zipper a
 prevZipper z@(Zipper Nothing _ _) = z
-prevZipper z@(Zipper (Just _) [] _) = z
+prevZipper   (Zipper (Just c) [] ns) = Zipper Nothing [] (c:ns)
 prevZipper   (Zipper (Just c) (p:ps) ns) = Zipper (Just p) ps (c:ns)
 
 nextZipper :: Zipper a -> Zipper a
 nextZipper z@(Zipper Nothing _ _) = z
-nextZipper z@(Zipper (Just _) _ []) = z
+nextZipper   (Zipper (Just c) ps []) = Zipper Nothing (c:ps) []
 nextZipper   (Zipper (Just c) ps (n:ns)) = Zipper (Just n) (c:ps) ns
 
 popZipper :: Zipper a -> (Maybe a, Zipper a)
