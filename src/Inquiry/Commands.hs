@@ -9,6 +9,7 @@ module Inquiry.Commands
   , insertMode
   , normalMode
   , nextHistoryItem
+  , prevHistoryItem
   , request
   ) where
 
@@ -20,7 +21,7 @@ import           Data.Text (unpack)
 import           Data.Text.Zipper (clearZipper)
 import           Inquiry.Input (setInput)
 import           Inquiry.Types (requestHistory, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
-import           Inquiry.Zipper (insertZipper, nextZipper, peekZipper)
+import           Inquiry.Zipper (insertZipper, nextZipper, peekZipper, prevZipper)
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
@@ -45,14 +46,25 @@ insertMode = M.continue . set mode Insert
 normalMode :: AppState -> EventM n (Next AppState)
 normalMode = M.continue . set mode Normal
 
+-- | Update the navigator with the previous request history item.
+prevHistoryItem :: AppState -> EventM n (Next AppState)
+prevHistoryItem state = M.continue $ do
+  let reqs = view requestHistory state
+      reqs' = prevZipper reqs
+      current = peekZipper reqs' <&> view url
+  state &
+    over urlInput (setInput $ fromMaybe "http://" current) .
+    set requestHistory reqs'
+
 -- | Update the navigator with the next request history item.
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem state = M.continue $ do
   let reqs = view requestHistory state
-      current = peekZipper (nextZipper reqs) <&> view url
+      reqs' = nextZipper reqs
+      current = peekZipper reqs' <&> view url
   state &
     over urlInput (setInput $ fromMaybe "http://" current) .
-    set requestHistory reqs
+    set requestHistory reqs'
 
 curl :: Request -> IO ()
 curl req = do
