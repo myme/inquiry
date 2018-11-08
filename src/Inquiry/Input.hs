@@ -14,4 +14,4 @@ input name value = E.applyEdit gotoEOL editor
   where editor = E.editorText name (Just 1) value
 
 setInput :: Text -> E.Editor Text Text -> E.Editor Text Text
-setInput text = E.applyEdit (const $ textZipper [text] (Just 1))
+setInput text = E.applyEdit $ gotoEOL . const (textZipper [text] (Just 1))
