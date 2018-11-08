@@ -1,3 +1,5 @@
+-- | Main Inquiry library entry point
+
 {-# LANGUAGE OverloadedStrings #-}
 
 module Inquiry
@@ -17,16 +19,19 @@ import           Inquiry.UI (drawUI)
 import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, urlInput)
 import           Lens.Micro.Platform (view, set)
 
+-- | Ex (Command) mode keymap
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 exMap = [(V.KEsc, normalMode)
         ,(V.KChar 'q', quit)
         ]
 
+-- | Insert mode keymap
 insertMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 insertMap = [(V.KEsc, normalMode)
             ,(V.KEnter, request)
             ]
 
+-- | Normal mode keymap
 normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 normalMap = [(V.KChar ':', exMode)
             ,(V.KChar 'i', insertMode)

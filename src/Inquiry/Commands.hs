@@ -1,3 +1,5 @@
+-- | Application commands/event handlers
+
 {-# LANGUAGE OverloadedStrings #-}
 
 module Inquiry.Commands
@@ -19,18 +21,23 @@ import           Lens.Micro.Platform (over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
+-- | Continue execution, updating the state if necessary.
 continue :: s -> EventM n (Next s)
 continue = M.continue
 
+-- | Quit/halt the application.
 quit :: s -> EventM n (Next s)
 quit = M.halt
 
+-- | Enter Ex (Command) mode.
 exMode :: AppState -> EventM n (Next AppState)
 exMode = M.continue . set mode Ex
 
+-- | Enter Insert mode.
 insertMode :: AppState -> EventM n (Next AppState)
 insertMode = M.continue . set mode Insert
 
+-- | Enter Normal mode.
 normalMode :: AppState -> EventM n (Next AppState)
 normalMode = M.continue . set mode Normal
 
@@ -41,6 +48,7 @@ curl req = do
     output <- hGetContents stdout
     putStrLn output
 
+-- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
   let req = view currentRequest state
