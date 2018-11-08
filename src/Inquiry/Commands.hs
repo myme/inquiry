@@ -15,10 +15,8 @@ module Inquiry.Commands
 
 import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
-import qualified Brick.Widgets.Edit as E
 import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
-import           Data.Text.Zipper (clearZipper)
 import           Inquiry.Input (setInput)
 import           Inquiry.Types (requestHistory, Request, urlInput, url, currentRequest, AppState, EditMode(..), mode)
 import           Inquiry.Zipper (insertZipper, nextZipper, peekZipper, prevZipper)
@@ -82,7 +80,7 @@ request state = M.suspendAndResume $ do
   putStrLn "Press Return to return..."
   _ <- getLine
   return $
-    set (currentRequest . url) "" $
+    set (currentRequest . url) "http://" $
     set mode Normal $
-    over urlInput (E.applyEdit clearZipper) $
+    over urlInput (setInput "http://") $
     over requestHistory (insertZipper req) state
