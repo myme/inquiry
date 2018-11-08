@@ -48,6 +48,12 @@ zipperTests = describe "Inquiry.Zipper" $ do
       popZipper z3 `shouldBe` (Just "baz", z2)
       popZipper (prevZipper z3) `shouldBe` (Just "bar", insertZipper "baz" z1)
 
+  describe "append" $ do
+    it "can append while keeping cursor" $ do
+      let zipper = prevZipper $ foldr insertZipper emptyZipper ["bar", "foo"]
+      peekZipper zipper `shouldBe` Just "foo"
+      appendZipper "baz" zipper `shouldBe` Zipper (Just "foo") [] ["bar", "baz"]
+
   describe "Foldable" $ do
     it "can create list with foldr" $ do
       let list = ["foo", "bar", "baz"]

@@ -2,6 +2,7 @@
 
 module Inquiry.Zipper
   ( Zipper(..)
+  , appendZipper
   , emptyZipper
   , insertZipper
   , nextZipper
@@ -24,6 +25,9 @@ emptyZipper = Zipper { zipperCurrent = Nothing
                      , zipperPrev = []
                      , zipperNext = []
                      }
+
+appendZipper :: a -> Zipper a -> Zipper a
+appendZipper x (Zipper c ps ns) = Zipper c ps (ns <> [x])
 
 insertZipper :: a -> Zipper a -> Zipper a
 insertZipper x z@(Zipper Nothing _ _)   = z { zipperCurrent = Just x }
