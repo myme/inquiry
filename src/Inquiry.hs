@@ -85,7 +85,9 @@ request state = do
     over recentReqs (<> [req]) state
 
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
-exMap = [(V.KEsc, M.continue . set mode Normal)]
+exMap = [(V.KEsc, M.continue . set mode Normal)
+        ,(V.KChar 'q', M.halt)
+        ]
 
 insertMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 insertMap = [(V.KEsc, M.continue . set mode Normal)
@@ -95,7 +97,6 @@ insertMap = [(V.KEsc, M.continue . set mode Normal)
 normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 normalMap = [(V.KChar ':', M.continue . set mode Ex)
             ,(V.KChar 'i', M.continue . set mode Insert)
-            ,(V.KChar 'q', M.halt)
             ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
