@@ -6,37 +6,16 @@ module Inquiry
 
 import qualified Brick.AttrMap as A
 import qualified Brick.Main as M
-import           Brick.Types (Padding(..), BrickEvent(..), Next, EventM, BrickEvent, Widget)
-import           Brick.Widgets.Border (border)
-import           Brick.Widgets.Border.Style (unicode)
-import           Brick.Widgets.Center (hCenter, center)
-import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, withBorderStyle, (<=>))
+import           Brick.Types (BrickEvent(..), Next, EventM, BrickEvent)
 import qualified Brick.Widgets.Edit as E
 import           Control.Applicative ((<|>))
 import           Control.Monad (void)
 import           Data.Text (Text)
 import qualified Graphics.Vty as V
 import           Inquiry.Commands (continue, request, insertMode, exMode, normalMode, quit)
-import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, recentReqs, urlInput)
+import           Inquiry.UI (drawUI)
+import           Inquiry.Types (url, currentRequest, AppState(..), EditMode(..), Method(..), Request(..), mode, urlInput)
 import           Lens.Micro.Platform (view, set)
-
-mainArea :: [Request] -> Widget a
-mainArea [] = center $ str "No recent requests!"
-mainArea recent = center $
-  str "Recent requests:" <=> foldr ((<=>) . str . show) emptyWidget recent
-
-drawUI :: AppState -> [Widget Text]
-drawUI state = [ui]
-    where ui = withBorderStyle unicode
-             $ title <=> border input <=> mainArea (view recentReqs state) <=> status
-          title = str " " <=> hCenter (str "inQuiry")
-          inInsert = view mode state == Insert
-          editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (view urlInput state)
-          input = padRight Max editor
-          status = case view mode state of
-            Ex -> txt ":"
-            Insert -> txt "-- INSERT --"
-            Normal -> txt " "
 
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 exMap = [(V.KEsc, normalMode)
@@ -82,7 +61,7 @@ app = void $ M.defaultMain app' initialState
           }
         initialState = AppState
           { _currentRequest = Request GET "http://"
-          , _mode = Insert
+          , _mode = Normal
           , _recentReqs = []
           , _urlInput = E.editorText "urlInput" (Just 1) ""
           }
