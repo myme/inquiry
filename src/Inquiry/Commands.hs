@@ -96,7 +96,6 @@ request state = M.suspendAndResume $ do
         set mode Normal .
         over urlInput (setInput "http://") .
         over requestHistory (Z.end . Z.append req)
-  print state'
   putStrLn "Press Return to return..."
   _ <- getLine
   return state'
