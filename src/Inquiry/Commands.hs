@@ -21,7 +21,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Inquiry.Input (getInput, setInput)
 import           Inquiry.Types (Method(..), Request(..), requestHistory, Request, urlInput, url, AppState, EditMode(..), mode)
-import           Inquiry.Zipper (gotoEnd, appendZipper, nextZipper, peekZipper, prevZipper)
+import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
@@ -49,8 +49,8 @@ normalMode = M.continue . set mode Normal
 prevHistoryItem' :: AppState -> AppState
 prevHistoryItem' state =
   let reqs = view requestHistory state
-      reqs' = prevZipper reqs
-      current = peekZipper reqs' <&> view url
+      reqs' = Z.prev reqs
+      current = Z.peek reqs' <&> view url
   in state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
@@ -63,8 +63,8 @@ prevHistoryItem = M.continue . prevHistoryItem'
 nextHistoryItem' :: AppState -> AppState
 nextHistoryItem' state =
   let reqs = view requestHistory state
-      reqs' = nextZipper reqs
-      current = peekZipper reqs' <&> view url
+      reqs' = Z.next reqs
+      current = Z.peek reqs' <&> view url
   in state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
@@ -88,7 +88,7 @@ request state = M.suspendAndResume $ do
   let state' = state &
         set mode Normal .
         over urlInput (setInput "http://") .
-        over requestHistory (gotoEnd . appendZipper req)
+        over requestHistory (Z.end . Z.append req)
   print state'
   putStrLn "Press Return to return..."
   _ <- getLine

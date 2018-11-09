@@ -2,15 +2,15 @@
 
 module Inquiry.Zipper
   ( Zipper(..)
-  , appendZipper
   , emptyZipper
-  , gotoEnd
-  , gotoStart
-  , insertZipper
-  , nextZipper
-  , peekZipper
-  , popZipper
-  , prevZipper
+  , append
+  , end
+  , insert
+  , next
+  , peek
+  , pop
+  , prev
+  , start
   ) where
 
 data Zipper a = Zipper { zipperCurrent :: Maybe a
@@ -28,40 +28,40 @@ emptyZipper = Zipper { zipperCurrent = Nothing
                      , zipperNext = []
                      }
 
-appendZipper :: a -> Zipper a -> Zipper a
-appendZipper x (Zipper c ps ns) = Zipper c ps (ns <> [x])
+append :: a -> Zipper a -> Zipper a
+append x (Zipper c ps ns) = Zipper c ps (ns <> [x])
 
-insertZipper :: a -> Zipper a -> Zipper a
-insertZipper x z@(Zipper Nothing _ _)   = z { zipperCurrent = Just x }
-insertZipper x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
+insert :: a -> Zipper a -> Zipper a
+insert x z@(Zipper Nothing _ _)   = z { zipperCurrent = Just x }
+insert x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
                                             , zipperPrev = c : xs
                                             }
 
-gotoStart :: Zipper a -> Zipper a
-gotoStart (Zipper Nothing ps ns)  = Zipper Nothing [] (reverse ps <> ns)
-gotoStart (Zipper (Just c) ps ns) = Zipper Nothing [] (reverse ps <> (c : ns))
+start :: Zipper a -> Zipper a
+start (Zipper Nothing ps ns)  = Zipper Nothing [] (reverse ps <> ns)
+start (Zipper (Just c) ps ns) = Zipper Nothing [] (reverse ps <> (c : ns))
 
-gotoEnd :: Zipper a -> Zipper a
-gotoEnd (Zipper Nothing ps ns)  = Zipper Nothing (reverse ns <> ps) []
-gotoEnd (Zipper (Just c) ps ns) = Zipper Nothing (reverse ns <> (c : ps)) []
+end :: Zipper a -> Zipper a
+end (Zipper Nothing ps ns)  = Zipper Nothing (reverse ns <> ps) []
+end (Zipper (Just c) ps ns) = Zipper Nothing (reverse ns <> (c : ps)) []
 
-peekZipper :: Zipper a -> Maybe a
-peekZipper (Zipper c _ _) = c
+peek :: Zipper a -> Maybe a
+peek (Zipper c _ _) = c
 
-prevZipper :: Zipper a -> Zipper a
-prevZipper z@(Zipper Nothing [] _) = z
-prevZipper   (Zipper (Just c) [] ns) = Zipper Nothing [] (c:ns)
-prevZipper   (Zipper Nothing (p:ps) ns) = Zipper (Just p) ps ns
-prevZipper   (Zipper (Just c) (p:ps) ns) = Zipper (Just p) ps (c:ns)
+prev :: Zipper a -> Zipper a
+prev z@(Zipper Nothing [] _) = z
+prev   (Zipper (Just c) [] ns) = Zipper Nothing [] (c:ns)
+prev   (Zipper Nothing (p:ps) ns) = Zipper (Just p) ps ns
+prev   (Zipper (Just c) (p:ps) ns) = Zipper (Just p) ps (c:ns)
 
-nextZipper :: Zipper a -> Zipper a
-nextZipper z@(Zipper Nothing _ []) = z
-nextZipper   (Zipper (Just c) ps []) = Zipper Nothing (c:ps) []
-nextZipper   (Zipper Nothing ps (n:ns)) = Zipper (Just n) ps ns
-nextZipper   (Zipper (Just c) ps (n:ns)) = Zipper (Just n) (c:ps) ns
+next :: Zipper a -> Zipper a
+next z@(Zipper Nothing _ []) = z
+next   (Zipper (Just c) ps []) = Zipper Nothing (c:ps) []
+next   (Zipper Nothing ps (n:ns)) = Zipper (Just n) ps ns
+next   (Zipper (Just c) ps (n:ns)) = Zipper (Just n) (c:ps) ns
 
-popZipper :: Zipper a -> (Maybe a, Zipper a)
-popZipper z@(Zipper Nothing _ _) = (Nothing, z)
-popZipper   (Zipper c [] []) = (c, emptyZipper)
-popZipper   (Zipper c (p:ps) []) = (c, Zipper (Just p) ps [])
-popZipper   (Zipper c ps (n:ns)) = (c, Zipper (Just n) ps ns)
+pop :: Zipper a -> (Maybe a, Zipper a)
+pop z@(Zipper Nothing _ _) = (Nothing, z)
+pop   (Zipper c [] []) = (c, emptyZipper)
+pop   (Zipper c (p:ps) []) = (c, Zipper (Just p) ps [])
+pop   (Zipper c ps (n:ns)) = (c, Zipper (Just n) ps ns)
