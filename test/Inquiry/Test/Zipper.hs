@@ -103,5 +103,3 @@ zipperTests = describe "Inquiry.Zipper" $ do
     it "folds to insert order" $ property $ \x -> do
       let zipper = foldr insert emptyZipper (reverse x :: [String])
       foldr (<>) mempty zipper == foldr (<>) mempty x
-
-    -- it "navigating zipper does not change fold" $ property $
