@@ -19,7 +19,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Inquiry.Input (getInput, setInput)
 import           Inquiry.Types (Method(..), Request(..), requestHistory, Request, urlInput, url, AppState, EditMode(..), mode)
-import           Inquiry.Zipper (appendZipper, nextZipper, peekZipper, prevZipper)
+import           Inquiry.Zipper (gotoEnd, appendZipper, nextZipper, peekZipper, prevZipper)
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
@@ -82,4 +82,4 @@ request state = M.suspendAndResume $ do
   return $
     set mode Normal $
     over urlInput (setInput "http://") $
-    over requestHistory (appendZipper req) state
+    over requestHistory (gotoEnd . appendZipper req) state

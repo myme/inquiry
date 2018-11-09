@@ -4,6 +4,8 @@ module Inquiry.Zipper
   ( Zipper(..)
   , appendZipper
   , emptyZipper
+  , gotoEnd
+  , gotoStart
   , insertZipper
   , nextZipper
   , peekZipper
@@ -34,6 +36,16 @@ insertZipper x z@(Zipper Nothing _ _)   = z { zipperCurrent = Just x }
 insertZipper x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
                                             , zipperPrev = c : xs
                                             }
+
+gotoStart :: Zipper a -> Zipper a
+gotoStart z@(Zipper Nothing [] _)   = z
+gotoStart   (Zipper Nothing ps ns)  = Zipper Nothing [] (reverse ps <> ns)
+gotoStart   (Zipper (Just c) ps ns) = Zipper Nothing [] (reverse ps <> (c : ns))
+
+gotoEnd :: Zipper a -> Zipper a
+gotoEnd z@(Zipper Nothing _ [])   = z
+gotoEnd   (Zipper Nothing ps ns)  = Zipper Nothing (reverse ns <> ps) []
+gotoEnd   (Zipper (Just c) ps ns) = Zipper Nothing (reverse ns <> (c : ps)) []
 
 peekZipper :: Zipper a -> Maybe a
 peekZipper (Zipper c _ _) = c

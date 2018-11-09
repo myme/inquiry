@@ -54,6 +54,20 @@ zipperTests = describe "Inquiry.Zipper" $ do
       peekZipper zipper `shouldBe` Just "foo"
       appendZipper "baz" zipper `shouldBe` Zipper (Just "foo") [] ["bar", "baz"]
 
+  describe "gotoStart" $ do
+    it "moves cursor to the start" $ do
+      let z1 = insertZipper "foo" emptyZipper
+          z2 = insertZipper "bar" z1
+          z3 = insertZipper "baz" z2
+      gotoStart z3 `shouldBe` Zipper Nothing [] ["foo", "bar", "baz"]
+
+  describe "gotoEnd" $ do
+    it "moves cursor to the end" $ do
+      let z1 = insertZipper "foo" emptyZipper
+          z2 = insertZipper "bar" z1
+          z3 = insertZipper "baz" z2
+      gotoEnd (gotoStart z3) `shouldBe` Zipper Nothing ["baz", "bar", "foo"] []
+
   describe "Foldable" $ do
     it "can create list with foldr" $ do
       let list = ["foo", "bar", "baz"]
