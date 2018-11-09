@@ -79,7 +79,10 @@ nextHistoryItem = M.continue . nextHistoryItem'
 
 curl :: Request -> IO ()
 curl req = do
-  let cmd = (proc "curl" [unpack $ view url req]){ std_out = CreatePipe }
+  let name = "curl"
+      args = [unpack $ view url req]
+      cmd = (proc name args){ std_out = CreatePipe }
+  putStrLn $ "Running command: `" <> unwords (name : args) <> "`\n"
   withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
     output <- hGetContents stdout
     putStrLn output
@@ -88,7 +91,6 @@ curl req = do
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
   let req = Request (view currentMethod state) (getInput $ view urlInput state)
-  putStrLn $ "Running request: " <> show req
   curl req
   let state' = state &
         set mode Normal .
