@@ -79,7 +79,7 @@ request state = M.suspendAndResume $ do
   curl req
   putStrLn "Press Return to return..."
   _ <- getLine
-  return $
-    set mode Normal $
-    over urlInput (setInput "http://") $
-    over requestHistory (gotoEnd . appendZipper req) state
+  return $ state &
+    set mode Normal .
+    over urlInput (setInput "http://") .
+    over requestHistory (gotoEnd . appendZipper req)
