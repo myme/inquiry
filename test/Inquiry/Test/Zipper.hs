@@ -18,10 +18,12 @@ zipperTests = describe "Inquiry.Zipper" $ do
     it "can navigate off the front" $ do
       let z = prevZipper $ insertZipper "foo" emptyZipper
       peekZipper z `shouldBe` Nothing
+      prevZipper z `shouldBe` z
 
     it "can navigate off the back" $ do
       let z = nextZipper $ insertZipper "foo" emptyZipper
       peekZipper z `shouldBe` Nothing
+      nextZipper z `shouldBe` z
 
     it "manually inserting elements and get back list" $ do
       let z1 = insertZipper "foo" emptyZipper
