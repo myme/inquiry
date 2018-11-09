@@ -1,9 +1,9 @@
 module Inquiry.Test.Zipper where
 
+import Data.Foldable (toList)
+import Inquiry.Zipper
 import Test.Hspec
 import Test.QuickCheck
-
-import Inquiry.Zipper
 
 zipperTests :: SpecWith ()
 zipperTests = describe "Inquiry.Zipper" $ do
@@ -28,7 +28,7 @@ zipperTests = describe "Inquiry.Zipper" $ do
           z2 = insertZipper "bar" z1
           z3 = insertZipper "baz" z2
           z4 = insertZipper "qux" z3
-      foldr (:) [] z4 `shouldBe` ["foo", "bar", "baz", "qux"]
+      toList z4 `shouldBe` ["foo", "bar", "baz", "qux"]
 
     it "can insert and navigate" $ do
       let z1 = insertZipper "foo" emptyZipper
@@ -84,13 +84,13 @@ zipperTests = describe "Inquiry.Zipper" $ do
     it "can create list with foldr" $ do
       let list = ["foo", "bar", "baz"]
           zipper = foldr insertZipper emptyZipper $ reverse list
-      foldr (:) [] zipper `shouldBe` foldr (:) [] list
+      toList zipper `shouldBe` list
 
     it "can ignores Nothing cursor" $ do
       let list = ["foo", "bar"]
           zipper = nextZipper $ foldr insertZipper emptyZipper $ reverse list
       peekZipper zipper `shouldBe` Nothing
-      foldr (:) [] zipper `shouldBe` foldr (:) [] list
+      toList zipper `shouldBe` list
 
   describe "properties" $ do
     it "peek == inserted" $ property $ \x -> do
