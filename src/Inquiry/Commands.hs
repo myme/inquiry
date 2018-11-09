@@ -20,7 +20,7 @@ import           Brick.Types (EventM, Next)
 import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Types (Method(..), Request(..), requestHistory, Request, urlInput, url, AppState, EditMode(..), mode)
+import           Inquiry.Types (AppState, EditMode(..), Method(..), Request(..), requestHistory, urlInput, url, mode)
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
