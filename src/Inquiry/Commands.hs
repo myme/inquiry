@@ -9,7 +9,9 @@ module Inquiry.Commands
   , insertMode
   , normalMode
   , nextHistoryItem
+  , nextHistoryItem'
   , prevHistoryItem
+  , prevHistoryItem'
   , request
   ) where
 
@@ -44,25 +46,31 @@ insertMode = M.continue . set mode Insert
 normalMode :: AppState -> EventM n (Next AppState)
 normalMode = M.continue . set mode Normal
 
--- | Update the navigator with the previous request history item.
-prevHistoryItem :: AppState -> EventM n (Next AppState)
-prevHistoryItem state = do
+prevHistoryItem' :: AppState -> AppState
+prevHistoryItem' state =
   let reqs = view requestHistory state
       reqs' = prevZipper reqs
       current = peekZipper reqs' <&> view url
-  M.continue $ state &
+  in state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
 
+-- | Update the navigator with the previous request history item.
+prevHistoryItem :: AppState -> EventM n (Next AppState)
+prevHistoryItem = M.continue . prevHistoryItem'
+
 -- | Update the navigator with the next request history item.
-nextHistoryItem :: AppState -> EventM n (Next AppState)
-nextHistoryItem state = do
+nextHistoryItem' :: AppState -> AppState
+nextHistoryItem' state =
   let reqs = view requestHistory state
       reqs' = nextZipper reqs
       current = peekZipper reqs' <&> view url
-  M.continue $ state &
+  in state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
+
+nextHistoryItem :: AppState -> EventM n (Next AppState)
+nextHistoryItem = M.continue . nextHistoryItem'
 
 curl :: Request -> IO ()
 curl req = do

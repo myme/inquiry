@@ -1,6 +1,9 @@
 import Test.Hspec
 
+import Inquiry.Test.Commands
 import Inquiry.Test.Zipper
 
 main :: IO ()
-main = hspec zipperTests
+main = hspec $ do
+  commandsTests
+  zipperTests
