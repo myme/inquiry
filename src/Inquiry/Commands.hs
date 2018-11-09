@@ -80,7 +80,7 @@ nextHistoryItem = M.continue . nextHistoryItem'
 curl :: Request -> IO ()
 curl req = do
   let name = "curl"
-      args = [unpack $ view url req]
+      args = ["-L", unpack $ view url req]
       cmd = (proc name args){ std_out = CreatePipe }
   putStrLn $ "Running command: `" <> unwords (name : args) <> "`\n"
   withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
