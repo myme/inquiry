@@ -46,21 +46,21 @@ normalMode = M.continue . set mode Normal
 
 -- | Update the navigator with the previous request history item.
 prevHistoryItem :: AppState -> EventM n (Next AppState)
-prevHistoryItem state = M.continue $ do
+prevHistoryItem state = do
   let reqs = view requestHistory state
       reqs' = prevZipper reqs
       current = peekZipper reqs' <&> view url
-  state &
+  M.continue $ state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
 
 -- | Update the navigator with the next request history item.
 nextHistoryItem :: AppState -> EventM n (Next AppState)
-nextHistoryItem state = M.continue $ do
+nextHistoryItem state = do
   let reqs = view requestHistory state
       reqs' = nextZipper reqs
       current = peekZipper reqs' <&> view url
-  state &
+  M.continue $ state &
     over urlInput (setInput $ fromMaybe "http://" current) .
     set requestHistory reqs'
 
@@ -77,9 +77,11 @@ request state = M.suspendAndResume $ do
   let req = Request GET (getInput $ view urlInput state)
   putStrLn $ "Running request: " <> show req
   curl req
+  let state' = state &
+        set mode Normal .
+        over urlInput (setInput "http://") .
+        over requestHistory (gotoEnd . appendZipper req)
+  print state'
   putStrLn "Press Return to return..."
   _ <- getLine
-  return $ state &
-    set mode Normal .
-    over urlInput (setInput "http://") .
-    over requestHistory (gotoEnd . appendZipper req)
+  return state'

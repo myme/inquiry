@@ -40,6 +40,18 @@ zipperTests = describe "Inquiry.Zipper" $ do
       peekZipper z4 `shouldBe` Just "bar"
       nextZipper z4 `shouldBe` Zipper Nothing ["bar", "foo"] []
 
+    it "can navigate forward from start" $ do
+      let z1 = gotoStart $ foldr insertZipper emptyZipper ["baz", "bar", "foo"]
+          z2 = nextZipper z1
+      z1 `shouldBe` Zipper Nothing [] ["foo", "bar", "baz"]
+      z2 `shouldBe` Zipper (Just "foo") [] ["bar", "baz"]
+
+    it "can navigate back from end" $ do
+      let z1 = gotoEnd $ foldr insertZipper emptyZipper ["baz", "bar", "foo"]
+          z2 = prevZipper z1
+      z1 `shouldBe` Zipper Nothing ["baz", "bar", "foo"] []
+      z2 `shouldBe` Zipper (Just "baz") ["bar", "foo"] []
+
     it "can pop items" $ do
       let z1 = insertZipper "foo" emptyZipper
           z2 = insertZipper "bar" z1

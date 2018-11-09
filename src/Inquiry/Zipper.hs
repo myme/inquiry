@@ -38,12 +38,10 @@ insertZipper x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
                                             }
 
 gotoStart :: Zipper a -> Zipper a
-gotoStart z@(Zipper Nothing [] _)   = z
 gotoStart   (Zipper Nothing ps ns)  = Zipper Nothing [] (reverse ps <> ns)
 gotoStart   (Zipper (Just c) ps ns) = Zipper Nothing [] (reverse ps <> (c : ns))
 
 gotoEnd :: Zipper a -> Zipper a
-gotoEnd z@(Zipper Nothing _ [])   = z
 gotoEnd   (Zipper Nothing ps ns)  = Zipper Nothing (reverse ns <> ps) []
 gotoEnd   (Zipper (Just c) ps ns) = Zipper Nothing (reverse ns <> (c : ps)) []
 
@@ -51,14 +49,16 @@ peekZipper :: Zipper a -> Maybe a
 peekZipper (Zipper c _ _) = c
 
 prevZipper :: Zipper a -> Zipper a
-prevZipper z@(Zipper Nothing _ _) = z
-prevZipper   (Zipper (Just c) [] ns) = Zipper Nothing [] (c:ns)
-prevZipper   (Zipper (Just c) (p:ps) ns) = Zipper (Just p) ps (c:ns)
+prevZipper (Zipper Nothing [] _) = emptyZipper
+prevZipper (Zipper (Just c) [] ns) = Zipper Nothing [] (c:ns)
+prevZipper (Zipper Nothing (p:ps) ns) = Zipper (Just p) ps ns
+prevZipper (Zipper (Just c) (p:ps) ns) = Zipper (Just p) ps (c:ns)
 
 nextZipper :: Zipper a -> Zipper a
-nextZipper z@(Zipper Nothing _ _) = z
-nextZipper   (Zipper (Just c) ps []) = Zipper Nothing (c:ps) []
-nextZipper   (Zipper (Just c) ps (n:ns)) = Zipper (Just n) (c:ps) ns
+nextZipper (Zipper Nothing _ []) = emptyZipper
+nextZipper (Zipper (Just c) ps []) = Zipper Nothing (c:ps) []
+nextZipper (Zipper Nothing ps (n:ns)) = Zipper (Just n) ps ns
+nextZipper (Zipper (Just c) ps (n:ns)) = Zipper (Just n) (c:ps) ns
 
 popZipper :: Zipper a -> (Maybe a, Zipper a)
 popZipper z@(Zipper Nothing _ _) = (Nothing, z)
