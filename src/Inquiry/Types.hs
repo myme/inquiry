@@ -8,6 +8,7 @@ module Inquiry.Types
   , method
   , url
   , currentMethod
+  , nextMethod
   , requestHistory
   , urlInput
   , mode
@@ -20,7 +21,10 @@ import           Lens.Micro.Platform (makeLenses)
 
 data EditMode = Ex | Normal | Insert deriving (Eq, Show)
 
-data Method = GET | POST deriving (Show, Eq)
+data Method = GET | POST deriving (Bounded, Enum, Eq, Show)
+
+nextMethod :: Method -> Method
+nextMethod m = cycle (enumFrom minBound) !! (fromEnum m + 1)
 
 data Request = Request { _method :: Method
                        , _url :: Text

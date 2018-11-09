@@ -14,7 +14,7 @@ import           Control.Applicative ((<|>))
 import           Control.Monad (void)
 import           Data.Text (Text)
 import qualified Graphics.Vty as V
-import           Inquiry.Commands (prevHistoryItem, continue, request, insertMode, exMode, normalMode, nextHistoryItem, quit)
+import           Inquiry.Commands (prevHistoryItem, continue, cycleMethod, request, insertMode, exMode, normalMode, nextHistoryItem, quit)
 import           Inquiry.Input (input)
 import           Inquiry.Types (AppState(..), EditMode(..), Method(..), mode, urlInput)
 import           Inquiry.UI (drawUI)
@@ -38,6 +38,7 @@ normalMap :: [(V.Key, AppState -> EventM n (Next AppState))]
 normalMap = [(V.KChar ':', exMode)
             ,(V.KChar 'i', insertMode)
             ,(V.KChar 'q', quit)
+            ,(V.KChar 'm', cycleMethod)
             ,(V.KChar 'n', nextHistoryItem)
             ,(V.KChar 'p', prevHistoryItem)
             ]

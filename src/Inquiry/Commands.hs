@@ -8,6 +8,7 @@ module Inquiry.Commands
   , exMode
   , insertMode
   , normalMode
+  , cycleMethod
   , nextHistoryItem
   , nextHistoryItem'
   , prevHistoryItem
@@ -20,7 +21,7 @@ import           Brick.Types (EventM, Next)
 import           Data.Maybe (fromMaybe)
 import           Data.Text (unpack)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Types (AppState, EditMode(..), Method(..), Request(..), requestHistory, urlInput, url, mode)
+import           Inquiry.Types (method, nextMethod, currentMethod, AppState, EditMode(..), Request(..), requestHistory, urlInput, url, mode)
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((<&>), (&), over, view, set)
 import           System.IO (hGetContents)
@@ -46,14 +47,18 @@ insertMode = M.continue . set mode Insert
 normalMode :: AppState -> EventM n (Next AppState)
 normalMode = M.continue . set mode Normal
 
+-- | Cycle through list of methods.
+cycleMethod :: AppState -> EventM n (Next AppState)
+cycleMethod state = M.continue $ state & over currentMethod nextMethod
+
 prevHistoryItem' :: AppState -> AppState
 prevHistoryItem' state =
-  let reqs = view requestHistory state
-      reqs' = Z.prev reqs
-      current = Z.peek reqs' <&> view url
+  let reqs = Z.prev $ view requestHistory state
+      current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" current) .
-    set requestHistory reqs'
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view url)) .
+    over currentMethod (\m -> maybe m (view method) current) .
+    set requestHistory reqs
 
 -- | Update the navigator with the previous request history item.
 prevHistoryItem :: AppState -> EventM n (Next AppState)
@@ -62,12 +67,12 @@ prevHistoryItem = M.continue . prevHistoryItem'
 -- | Update the navigator with the next request history item.
 nextHistoryItem' :: AppState -> AppState
 nextHistoryItem' state =
-  let reqs = view requestHistory state
-      reqs' = Z.next reqs
-      current = Z.peek reqs' <&> view url
+  let reqs = Z.next $ view requestHistory state
+      current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" current) .
-    set requestHistory reqs'
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view url)) .
+    over currentMethod (\m -> maybe m (view method) current) .
+    set requestHistory reqs
 
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem = M.continue . nextHistoryItem'
@@ -82,7 +87,7 @@ curl req = do
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
-  let req = Request GET (getInput $ view urlInput state)
+  let req = Request (view currentMethod state) (getInput $ view urlInput state)
   putStrLn $ "Running request: " <> show req
   curl req
   let state' = state &

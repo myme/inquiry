@@ -12,7 +12,7 @@ import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, wit
 import qualified Brick.Widgets.Edit as E
 import           Data.Foldable (toList)
 import           Data.Text (Text)
-import           Inquiry.Types (mode, urlInput, requestHistory, AppState, EditMode(..), Request)
+import           Inquiry.Types (currentMethod, mode, urlInput, requestHistory, AppState, EditMode(..), Request)
 import           Inquiry.Zipper (Zipper, emptyZipper)
 import           Lens.Micro.Platform (view)
 
@@ -24,11 +24,12 @@ mainArea recent | recent == emptyZipper = center $ txt "No recent requests!"
 drawUI :: AppState -> [Widget Text]
 drawUI state = [ui]
     where ui = withBorderStyle unicode
-             $ title <=> border input <=> mainArea (view requestHistory state) <=> status
+             $ title <=> navigator <=> mainArea (view requestHistory state) <=> status
           title = txt " " <=> hCenter (txt "inQuiry")
           inInsert = view mode state == Insert
           editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (view urlInput state)
-          input = padRight Max editor
+          navigator = border $ method <+> padRight Max editor
+          method = str $ show (view currentMethod state) <> ": "
           status = case view mode state of
             Ex -> txt ":"
             Insert -> txt "-- INSERT --"

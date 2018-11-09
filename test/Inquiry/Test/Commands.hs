@@ -34,6 +34,15 @@ commandsTests = describe "Inquiry.Commands" $ do
           s1 = nextHistoryItem' $ initialState & requestHistory %~ Z.insert req
       view requestHistory s1 `shouldBe` Z.Zipper Nothing [req] []
 
+    it "updates currentMethod" $ do
+      let req = Request POST "http://example.com"
+          state = initialState & requestHistory %~ Z.insert req
+          prev = prevHistoryItem' $ nextHistoryItem' state
+          next = nextHistoryItem' $ prevHistoryItem' state
+      view currentMethod state `shouldBe` GET
+      view currentMethod prev `shouldBe` POST
+      view currentMethod next `shouldBe` POST
+
     it "over zipper" $ do
       let reqs = [ Request GET "http://foo.com"
                  , Request GET "http://bar.com"
