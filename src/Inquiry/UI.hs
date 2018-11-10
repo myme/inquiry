@@ -5,32 +5,33 @@ module Inquiry.UI
   ) where
 
 import           Brick.Types (Padding(..), Widget)
-import           Brick.Widgets.Border (border)
+import           Brick.Widgets.Border (borderWithLabel)
 import           Brick.Widgets.Border.Style (unicode)
-import           Brick.Widgets.Center (hCenter, center)
+import           Brick.Widgets.Center (center)
 import           Brick.Widgets.Core (txt, (<+>), emptyWidget, padRight, str, withBorderStyle, (<=>))
 import qualified Brick.Widgets.Edit as E
 import           Data.Foldable (toList)
 import           Data.Text (Text)
 import           Inquiry.Types (currentMethod, mode, urlInput, requestHistory, AppState, EditMode(..), Request)
 import           Inquiry.Zipper (Zipper, emptyZipper)
-import           Lens.Micro.Platform (view)
+import           Lens.Micro.Platform ((^.))
 
-mainArea :: Zipper Request -> Widget a
-mainArea recent | recent == emptyZipper = center $ txt "No recent requests!"
-                | otherwise = center $
-                    txt "Recent requests:" <=> foldr ((<=>) . str . show) emptyWidget (reverse $ toList recent)
+recents :: Zipper Request -> Widget a
+recents recent = borderWithLabel (txt "Recent requests") recents'
+  where recents' | recent == emptyZipper = center $ txt "No recent requests!"
+                 | otherwise = center $ foldr ((<=>) . str . show) emptyWidget list
+        list = reverse $ toList recent
 
 drawUI :: AppState -> [Widget Text]
 drawUI state = [ui]
     where ui = withBorderStyle unicode
-             $ title <=> navigator <=> mainArea (view requestHistory state) <=> status
-          title = txt " " <=> hCenter (txt "inQuiry")
-          inInsert = view mode state == Insert
-          editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (view urlInput state)
-          navigator = border $ method <+> padRight Max editor
-          method = str $ show (view currentMethod state) <> ": "
-          status = case view mode state of
-            Ex -> txt ":"
+             $ navigator <=> headers <=> recents (state ^. requestHistory) <=> status
+          navigator = borderWithLabel (txt "inQuiry") $ method <+> padRight Max editor
+          inInsert = state ^. mode == Insert
+          editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (state ^. urlInput)
+          method = str $ show (state ^. currentMethod) <> ": "
+          headers = borderWithLabel (txt "Headers") $ padRight Max $ txt "Empty..."
+          status = case state ^. mode of
+            Ex     -> txt ":"
             Insert -> txt "-- INSERT --"
             Normal -> txt " "
