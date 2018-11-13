@@ -12,6 +12,7 @@ module Inquiry.Types
   , requestHistory
   , urlInput
   , mode
+  , response
   ) where
 
 import qualified Brick.Widgets.Edit as E
@@ -37,6 +38,7 @@ data AppState = AppState { _currentMethod :: Method
                          , _requestHistory :: Zipper Request
                          , _urlInput :: E.Editor Text Text
                          , _mode :: EditMode
+                         , _response :: Text
                          } deriving (Show)
 
 makeLenses ''AppState

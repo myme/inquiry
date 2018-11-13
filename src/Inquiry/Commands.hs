@@ -19,12 +19,13 @@ module Inquiry.Commands
 import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
 import           Data.Maybe (fromMaybe)
-import           Data.Text (unpack)
+import           Data.Text (pack, Text, unpack)
+import           Data.Text.IO (putStrLn, hGetContents)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Types (method, nextMethod, currentMethod, AppState, EditMode(..), Request(..), requestHistory, urlInput, url, mode)
+import           Inquiry.Types (response, method, nextMethod, currentMethod, AppState, EditMode(..), Request(..), requestHistory, urlInput, url, mode)
 import qualified Inquiry.Zipper as Z
-import           Lens.Micro.Platform ((<&>), (&), over, view, set)
-import           System.IO (hGetContents)
+import           Lens.Micro.Platform ((^.), (<&>), (&), over, view, set)
+import           Prelude hiding (putStrLn)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
 -- | Continue execution, updating the state if necessary.
@@ -77,25 +78,25 @@ nextHistoryItem' state =
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem = M.continue . nextHistoryItem'
 
-curl :: Request -> IO ()
+curl :: Request -> IO Text
 curl req = do
   let name = "curl"
-      args = ["-L", unpack $ view url req]
+      args = ["-L", unpack $ req ^. url]
       cmd = (proc name args){ std_out = CreatePipe }
-  putStrLn $ "Running command: `" <> unwords (name : args) <> "`\n"
+  putStrLn $ pack $ concat ["Running command: `", name, unwords args, "`\n"]
   withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
-    output <- hGetContents stdout
-    putStrLn output
+    response' <- hGetContents stdout
+    putStrLn response'
+    return response'
 
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
   let req = Request (view currentMethod state) (getInput $ view urlInput state)
-  curl req
+  response' <- curl req
   let state' = state &
+        set response response' .
         set mode Normal .
         over urlInput (setInput "http://") .
         over requestHistory (Z.end . Z.append req)
-  putStrLn "Press Return to return..."
-  _ <- getLine
   return state'

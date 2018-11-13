@@ -71,4 +71,5 @@ app = void $ M.defaultMain app' initialState
           , _mode = Normal
           , _requestHistory = emptyZipper
           , _urlInput = input "urlInput" "http://"
+          , _response = ""
           }

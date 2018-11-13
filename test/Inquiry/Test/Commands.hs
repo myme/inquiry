@@ -14,6 +14,7 @@ initialState = AppState
                { _currentMethod = GET
                , _mode = Normal
                , _requestHistory = Z.emptyZipper
+               , _response = ""
                , _urlInput = input "urlInput" "http://"
                }
 
