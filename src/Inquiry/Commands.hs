@@ -23,7 +23,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (pack, Text, unpack)
 import           Data.Text.IO (putStrLn, hGetContents)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Request (Request(..), method, url, nextMethod)
+import           Inquiry.Request (Request(..), nextMethod, reqMethod, reqUrl)
 import           Inquiry.Types (showRecents, response, currentMethod, AppState, EditMode(..), requestHistory, urlInput, mode)
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((^.), (<&>), (&), over, view, set)
@@ -59,8 +59,8 @@ prevHistoryItem' state =
   let reqs = Z.prev $ view requestHistory state
       current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" (current <&> view url)) .
-    over currentMethod (\m -> maybe m (view method) current) .
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view reqUrl)) .
+    over currentMethod (\m -> maybe m (view reqMethod) current) .
     set requestHistory reqs
 
 -- | Update the navigator with the previous request history item.
@@ -73,8 +73,8 @@ nextHistoryItem' state =
   let reqs = Z.next $ view requestHistory state
       current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" (current <&> view url)) .
-    over currentMethod (\m -> maybe m (view method) current) .
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view reqUrl)) .
+    over currentMethod (\m -> maybe m (view reqMethod) current) .
     set requestHistory reqs
 
 nextHistoryItem :: AppState -> EventM n (Next AppState)
@@ -83,7 +83,7 @@ nextHistoryItem = M.continue . nextHistoryItem'
 curl :: Request -> IO Text
 curl req = do
   let name = "curl"
-      args = ["-L", unpack $ req ^. url]
+      args = ["-L", unpack $ req ^. reqUrl]
       cmd = (proc name args){ std_out = CreatePipe }
   putStrLn $ pack $ concat ["Running command: `", name, unwords args, "`\n"]
   withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
