@@ -4,6 +4,7 @@ module Inquiry.Test.Commands where
 
 import           Inquiry.Commands
 import           Inquiry.Input
+import           Inquiry.Request
 import           Inquiry.Types
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((^.), (.~), (%~), (&), view)

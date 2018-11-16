@@ -12,7 +12,8 @@ import           Brick.Widgets.Core (padBottom, padTopBottom, padLeftRight, txt,
 import qualified Brick.Widgets.Edit as E
 import           Data.Foldable (toList)
 import           Data.Text (Text)
-import           Inquiry.Types (showRecents, response, currentMethod, mode, urlInput, requestHistory, AppState, EditMode(..), Request)
+import           Inquiry.Request (Request)
+import           Inquiry.Types (showRecents, response, currentMethod, mode, urlInput, requestHistory, AppState, EditMode(..))
 import           Inquiry.Zipper (Zipper, emptyZipper)
 import           Lens.Micro.Platform ((^.))
 
