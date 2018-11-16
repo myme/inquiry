@@ -13,6 +13,7 @@ module Inquiry.Types
   , urlInput
   , mode
   , response
+  , showRecents
   ) where
 
 import qualified Brick.Widgets.Edit as E
@@ -39,6 +40,7 @@ data AppState = AppState { _currentMethod :: Method
                          , _urlInput :: E.Editor Text Text
                          , _mode :: EditMode
                          , _response :: Text
+                         , _showRecents :: Bool
                          } deriving (Show)
 
 makeLenses ''AppState

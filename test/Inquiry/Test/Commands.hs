@@ -15,6 +15,7 @@ initialState = AppState
                , _mode = Normal
                , _requestHistory = Z.emptyZipper
                , _response = ""
+               , _showRecents = False
                , _urlInput = input "urlInput" "http://"
                }
 

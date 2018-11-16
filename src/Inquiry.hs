@@ -14,7 +14,7 @@ import           Control.Applicative ((<|>))
 import           Control.Monad (void)
 import           Data.Text (Text)
 import qualified Graphics.Vty as V
-import           Inquiry.Commands (prevHistoryItem, continue, cycleMethod, request, insertMode, exMode, normalMode, nextHistoryItem, quit)
+import           Inquiry.Commands (prevHistoryItem, continue, cycleMethod, request, insertMode, exMode, normalMode, nextHistoryItem, quit, toggleRecents)
 import           Inquiry.Input (input)
 import           Inquiry.Types (AppState(..), EditMode(..), Method(..), mode, urlInput)
 import           Inquiry.UI (drawUI)
@@ -41,6 +41,7 @@ normalMap = [(V.KChar ':', exMode)
             ,(V.KChar 'm', cycleMethod)
             ,(V.KChar 'n', nextHistoryItem)
             ,(V.KChar 'p', prevHistoryItem)
+            ,(V.KChar 'r', toggleRecents)
             ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
@@ -72,4 +73,5 @@ app = void $ M.defaultMain app' initialState
           , _requestHistory = emptyZipper
           , _urlInput = input "urlInput" "http://"
           , _response = ""
+          , _showRecents = False
           }

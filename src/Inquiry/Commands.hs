@@ -14,6 +14,7 @@ module Inquiry.Commands
   , prevHistoryItem
   , prevHistoryItem'
   , request
+  , toggleRecents
   ) where
 
 import qualified Brick.Main as M
@@ -22,7 +23,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (pack, Text, unpack)
 import           Data.Text.IO (putStrLn, hGetContents)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Types (response, method, nextMethod, currentMethod, AppState, EditMode(..), Request(..), requestHistory, urlInput, url, mode)
+import           Inquiry.Types (showRecents, response, method, nextMethod, currentMethod, AppState, EditMode(..), Request(..), requestHistory, urlInput, url, mode)
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((^.), (<&>), (&), over, view, set)
 import           Prelude hiding (putStrLn)
@@ -100,3 +101,6 @@ request state = M.suspendAndResume $ do
         over urlInput (setInput "http://") .
         over requestHistory (Z.end . Z.append req)
   return state'
+
+toggleRecents :: AppState -> EventM n (Next AppState)
+toggleRecents = M.continue . over showRecents not
