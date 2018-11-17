@@ -34,8 +34,8 @@ append x (Zipper c ps ns) = Zipper c ps (ns <> [x])
 insert :: a -> Zipper a -> Zipper a
 insert x z@(Zipper Nothing _ _)   = z { zipperCurrent = Just x }
 insert x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
-                                            , zipperPrev = c : xs
-                                            }
+                                      , zipperPrev = c : xs
+                                      }
 
 start :: Zipper a -> Zipper a
 start (Zipper Nothing ps ns)  = Zipper Nothing [] (reverse ps <> ns)

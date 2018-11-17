@@ -11,13 +11,14 @@ import           Brick.Widgets.Center (centerLayer, center)
 import           Brick.Widgets.Core (padBottom, padTopBottom, padLeftRight, txt, (<+>), emptyWidget, padRight, str, withBorderStyle, (<=>))
 import qualified Brick.Widgets.Edit as E
 import           Data.Foldable (toList)
+import           Data.Maybe (fromMaybe)
 import           Data.Text (Text)
-import           Inquiry.Request (Request)
-import           Inquiry.Types (showRecents, response, currentMethod, mode, urlInput, requestHistory, AppState, EditMode(..))
-import           Inquiry.Zipper (Zipper, emptyZipper)
+import           Inquiry.Request (resBody, Request(..), Response, Method(..), reqMethod, RequestHistory)
+import           Inquiry.Types (showRecents, mode, urlInput, requestHistory, AppState, EditMode(..))
+import           Inquiry.Zipper (peek, emptyZipper)
 import           Lens.Micro.Platform ((^.))
 
-drawRecents :: Zipper Request -> Widget a
+drawRecents :: RequestHistory -> Widget a
 drawRecents recent = centerLayer $
     borderWithLabel (txt "Recent requests") $
     padTopBottom 5 $
@@ -27,24 +28,27 @@ drawRecents recent = centerLayer $
                  | otherwise = foldr ((<=>) . str . show) emptyWidget list
         list = reverse $ toList recent
 
-drawResponse :: Text -> Widget a
+drawResponse :: Maybe Response -> Widget a
 drawResponse response' = borderWithLabel (txt "Response") $ padRight Max $ padBottom Max text
-  where text = if response' == "" then center $ txt "No response" else txt response'
+  where text = case response' of
+          Nothing -> center $ txt "No response"
+          Just response'' -> txt (response'' ^. resBody)
 
 drawUI :: AppState -> [Widget Text]
 drawUI state = [recents, main]
-    where recents = if state ^. showRecents
+    where (request, response) = fromMaybe (Request GET "", Nothing) $ peek $ state ^. requestHistory
+          recents = if state ^. showRecents
             then drawRecents (state ^. requestHistory)
             else emptyWidget
           main = withBorderStyle unicode $
             navigator <=>
             headers <=>
-            drawResponse (state ^. response) <=>
+            drawResponse response <=>
             status
           navigator = borderWithLabel (txt "inQuiry") $ method <+> padRight Max editor
           inInsert = state ^. mode == Insert
           editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (state ^. urlInput)
-          method = str $ show (state ^. currentMethod) <> ": "
+          method = str $ show (request ^. reqMethod) <> ": "
           headers = borderWithLabel (txt "Headers") $ padRight Max $ txt "Empty..."
           status = case state ^. mode of
             Ex     -> txt ":"

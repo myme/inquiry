@@ -23,10 +23,10 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (pack, Text, unpack)
 import           Data.Text.IO (putStrLn, hGetContents)
 import           Inquiry.Input (getInput, setInput)
-import           Inquiry.Request (Request(..), nextMethod, reqMethod, reqUrl)
-import           Inquiry.Types (showRecents, response, currentMethod, AppState, EditMode(..), requestHistory, urlInput, mode)
+import           Inquiry.Request (Response(..), Request(..), nextMethod, reqMethod, reqUrl)
+import           Inquiry.Types (currentMethod, showRecents, AppState, EditMode(..), requestHistory, urlInput, mode)
 import qualified Inquiry.Zipper as Z
-import           Lens.Micro.Platform ((^.), (<&>), (&), over, view, set)
+import           Lens.Micro.Platform ((^.), (<&>), (&), _1, over, view, set)
 import           Prelude hiding (putStrLn)
 import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
 
@@ -59,8 +59,8 @@ prevHistoryItem' state =
   let reqs = Z.prev $ view requestHistory state
       current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" (current <&> view reqUrl)) .
-    over currentMethod (\m -> maybe m (view reqMethod) current) .
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view (_1 . reqUrl))) .
+    over currentMethod (\m -> maybe m (view (_1 . reqMethod)) current) .
     set requestHistory reqs
 
 -- | Update the navigator with the previous request history item.
@@ -73,8 +73,8 @@ nextHistoryItem' state =
   let reqs = Z.next $ view requestHistory state
       current = Z.peek reqs
   in state &
-    over urlInput (setInput $ fromMaybe "http://" (current <&> view reqUrl)) .
-    over currentMethod (\m -> maybe m (view reqMethod) current) .
+    over urlInput (setInput $ fromMaybe "http://" (current <&> view (_1 . reqUrl))) .
+    over currentMethod (\m -> maybe m (view (_1 . reqMethod)) current) .
     set requestHistory reqs
 
 nextHistoryItem :: AppState -> EventM n (Next AppState)
@@ -87,20 +87,19 @@ curl req = do
       cmd = (proc name args){ std_out = CreatePipe }
   putStrLn $ pack $ concat ["Running command: `", name, unwords args, "`\n"]
   withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
-    response' <- hGetContents stdout
-    putStrLn response'
-    return response'
+    response <- hGetContents stdout
+    putStrLn response
+    return response
 
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = M.suspendAndResume $ do
   let req = Request (view currentMethod state) (getInput $ view urlInput state)
-  response' <- curl req
+  response <- curl req
   let state' = state &
-        set response response' .
         set mode Normal .
         over urlInput (setInput "http://") .
-        over requestHistory (Z.end . Z.append req)
+        over requestHistory (Z.end . Z.append (req, Just $ Response 200 response))
   return state'
 
 toggleRecents :: AppState -> EventM n (Next AppState)

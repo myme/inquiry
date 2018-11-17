@@ -15,7 +15,6 @@ initialState = AppState
                { _currentMethod = GET
                , _mode = Normal
                , _requestHistory = Z.emptyZipper
-               , _response = ""
                , _showRecents = False
                , _urlInput = input "urlInput" "http://"
                }
@@ -28,18 +27,18 @@ commandsTests = describe "Inquiry.Commands" $ do
       view requestHistory state `shouldBe` Z.emptyZipper
 
     it "prev of singleton list is Nothing" $ do
-      let req = Request GET "http://example.com"
-          state = prevHistoryItem' $ initialState & requestHistory %~ Z.insert req
-      view requestHistory state `shouldBe` Z.Zipper Nothing [] [req]
+      let entry = (Request GET "http://example.com", Nothing)
+          state = prevHistoryItem' $ initialState & requestHistory %~ Z.insert entry
+      view requestHistory state `shouldBe` Z.Zipper Nothing [] [entry]
 
     it "next of singleton list is Nothing" $ do
-      let req = Request GET "http://example.com"
-          s1 = nextHistoryItem' $ initialState & requestHistory %~ Z.insert req
-      view requestHistory s1 `shouldBe` Z.Zipper Nothing [req] []
+      let entry = (Request GET "http://example.com", Nothing)
+          s1 = nextHistoryItem' $ initialState & requestHistory %~ Z.insert entry
+      view requestHistory s1 `shouldBe` Z.Zipper Nothing [entry] []
 
     it "updates currentMethod" $ do
-      let req = Request POST "http://example.com"
-          state = initialState & requestHistory %~ Z.insert req
+      let entry = (Request POST "http://example.com", Nothing)
+          state = initialState & requestHistory %~ Z.insert entry
           prev = prevHistoryItem' $ nextHistoryItem' state
           next = nextHistoryItem' $ prevHistoryItem' state
       view currentMethod state `shouldBe` GET
@@ -47,9 +46,9 @@ commandsTests = describe "Inquiry.Commands" $ do
       view currentMethod next `shouldBe` POST
 
     it "over zipper" $ do
-      let reqs = [ Request GET "http://foo.com"
-                 , Request GET "http://bar.com"
-                 , Request GET "http://baz.com"
+      let reqs = [ (Request GET "http://foo.com", Nothing)
+                 , (Request GET "http://bar.com", Nothing)
+                 , (Request GET "http://baz.com", Nothing)
                  ]
           s0 = initialState & requestHistory .~ foldr Z.insert Z.emptyZipper (reverse reqs)
 
