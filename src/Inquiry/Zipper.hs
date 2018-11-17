@@ -15,7 +15,6 @@ module Inquiry.Zipper
   , start
   ) where
 
-import Data.Maybe (fromJust)
 import Lens.Micro.Platform (Lens', lens)
 
 data Zipper a = Zipper { zipperCurrent :: Maybe a
@@ -42,8 +41,10 @@ insert x z@(Zipper (Just c) xs _) = z { zipperCurrent = Just x
                                       , zipperPrev = c : xs
                                       }
 
-focus :: Lens' (Zipper a) a
-focus = lens (fromJust . peek) (flip set)
+focus :: Lens' (Zipper a) (Maybe a)
+focus = lens peek setM
+  where setM z Nothing = z
+        setM z (Just x) = set x z
 
 set :: a -> Zipper a -> Zipper a
 set x z = let (_, z') = pop z in insert x z'

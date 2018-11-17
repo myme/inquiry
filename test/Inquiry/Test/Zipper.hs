@@ -103,16 +103,16 @@ zipperTests = describe "Inquiry.Zipper" $ do
   describe "Lens" $ do
     it "can view the focused element" $ do
       let z = insert "foo" emptyZipper
-      z ^. focus `shouldBe` "foo"
+      z ^. focus `shouldBe` Just "foo"
 
     it "can set the focused element" $ do
       let z1 = insert "foo" emptyZipper
-          z2 = z1 & focus .~ "bar"
+          z2 = z1 & focus ?~ "bar"
       peek z2 `shouldBe` Just "bar"
 
     it "can update the focused element" $ do
       let z1 = insert "foo" emptyZipper
-          z2 = z1 & focus %~ reverse
+          z2 = z1 & focus %~ fmap reverse
       peek z2 `shouldBe` Just "oof"
 
   describe "properties" $ do
