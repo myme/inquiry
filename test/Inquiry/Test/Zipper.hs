@@ -4,6 +4,7 @@ import Data.Foldable (toList)
 import Inquiry.Zipper
 import Test.Hspec
 import Test.QuickCheck
+import Lens.Micro.Platform hiding (set)
 
 zipperTests :: SpecWith ()
 zipperTests = describe "Inquiry.Zipper" $ do
@@ -14,6 +15,11 @@ zipperTests = describe "Inquiry.Zipper" $ do
     it "can insert one element" $ do
       let z = insert "foo" emptyZipper
       peek z `shouldBe` Just "foo"
+
+    it "can set the current element" $ do
+      let z1 = insert "foo" emptyZipper
+          z2 = set "bar" z1
+      peek z2 `shouldBe` Just "bar"
 
     it "can navigate off the front" $ do
       let z = prev $ insert "foo" emptyZipper
@@ -93,6 +99,21 @@ zipperTests = describe "Inquiry.Zipper" $ do
           zipper = next $ foldr insert emptyZipper $ reverse list
       peek zipper `shouldBe` Nothing
       toList zipper `shouldBe` list
+
+  describe "Lens" $ do
+    it "can view the focused element" $ do
+      let z = insert "foo" emptyZipper
+      z ^. focus `shouldBe` "foo"
+
+    it "can set the focused element" $ do
+      let z1 = insert "foo" emptyZipper
+          z2 = z1 & focus .~ "bar"
+      peek z2 `shouldBe` Just "bar"
+
+    it "can update the focused element" $ do
+      let z1 = insert "foo" emptyZipper
+          z2 = z1 & focus %~ reverse
+      peek z2 `shouldBe` Just "oof"
 
   describe "properties" $ do
     it "peek == inserted" $ property $ \x -> do
