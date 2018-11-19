@@ -19,6 +19,7 @@ module Inquiry.Commands
 
 import qualified Brick.Main as M
 import           Brick.Types (EventM, Next)
+import           Control.Monad.IO.Class (liftIO)
 import           Data.Maybe (fromMaybe)
 import           Data.Text (pack, Text, unpack)
 import           Data.Text.IO (putStrLn, hGetContents)
@@ -28,7 +29,7 @@ import           Inquiry.Types (currentMethod, showRecents, AppState, EditMode(.
 import qualified Inquiry.Zipper as Z
 import           Lens.Micro.Platform ((^.), (<&>), (&), _1, over, view, set)
 import           Prelude hiding (putStrLn)
-import           System.Process (StdStream(..), std_out, withCreateProcess, proc)
+import           System.Process (std_err, StdStream(..), std_out, withCreateProcess, proc)
 
 -- | Continue execution, updating the state if necessary.
 continue :: s -> EventM n (Next s)
@@ -84,23 +85,19 @@ curl :: Request -> IO Text
 curl req = do
   let name = "curl"
       args = ["-L", unpack $ req ^. reqUrl]
-      cmd = (proc name args){ std_out = CreatePipe }
+      cmd = (proc name args){ std_out = CreatePipe, std_err = NoStream }
   putStrLn $ pack $ concat ["Running command: `", name, unwords args, "`\n"]
-  withCreateProcess cmd $ \_ (Just stdout) _ _ -> do
-    response <- hGetContents stdout
-    putStrLn response
-    return response
+  withCreateProcess cmd $ \_ (Just stdout) _ _ -> hGetContents stdout
 
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
-request state = M.suspendAndResume $ do
+request state = do
   let req = Request (view currentMethod state) (getInput $ view urlInput state)
-  response <- curl req
-  let state' = state &
+  response <- liftIO $ curl req
+  M.continue $ state &
         set mode Normal .
         over urlInput (setInput "http://") .
-        over requestHistory (Z.end . Z.append (req, Just $ Response 200 response))
-  return state'
+        over requestHistory (Z.prev . Z.end . Z.append (req, Just $ Response 200 response))
 
 toggleRecents :: AppState -> EventM n (Next AppState)
 toggleRecents = M.continue . over showRecents not
