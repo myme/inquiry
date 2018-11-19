@@ -13,9 +13,9 @@ module Inquiry.Request
   , resCode
   ) where
 
-import           Data.Text (Text, unpack)
-import           Inquiry.Zipper (Zipper)
-import           Lens.Micro.Platform (makeLenses)
+import Data.Text (Text, unpack)
+import Inquiry.Zipper (Zipper)
+import Lens.Micro.Platform (makeLenses)
 
 data Method = GET | POST deriving (Bounded, Enum, Eq, Show)
 
