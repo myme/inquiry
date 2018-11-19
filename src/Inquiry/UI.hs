@@ -15,7 +15,7 @@ import           Data.Maybe (fromMaybe)
 import           Data.Text (Text)
 import           Inquiry.Request (resBody, Request(..), Response, Method(..), reqMethod, RequestHistory)
 import           Inquiry.Types (showRecents, mode, urlInput, requestHistory, AppState, EditMode(..))
-import           Inquiry.Zipper (peek, emptyZipper)
+import           Inquiry.Zipper (focus, emptyZipper)
 import           Lens.Micro.Platform ((^.))
 
 drawRecents :: RequestHistory -> Widget a
@@ -36,7 +36,7 @@ drawResponse response' = borderWithLabel (txt "Response") $ padRight Max $ padBo
 
 drawUI :: AppState -> [Widget Text]
 drawUI state = [recents, main]
-    where (request, response) = fromMaybe (Request GET "", Nothing) $ peek $ state ^. requestHistory
+    where (request, response) = fromMaybe (Request GET "", Nothing) $ state ^. requestHistory . focus
           recents = if state ^. showRecents
             then drawRecents (state ^. requestHistory)
             else emptyWidget
