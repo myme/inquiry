@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- | Application commands/event handlers
 module Inquiry.Commands
   ( continue,
@@ -21,13 +19,13 @@ import qualified Brick.Main as M
 import Brick.Types (EventM, Next)
 import Control.Monad.IO.Class (liftIO)
 import Data.Maybe (fromMaybe)
+import Inquiry.Http (http)
 import Inquiry.Input (getInput, setInput)
 import Inquiry.Request (Request (..), nextMethod, reqMethod, reqUrl)
-import Inquiry.Types (AppState, EditMode (..), currentMethod, mode, requestHistory, showRecents, urlInput)
+import Inquiry.Types (AppState, EditMode (..), currentMethod, defaultUrl, mode, requestHistory, showRecents, urlInput)
 import qualified Inquiry.Zipper as Z
-import Lens.Micro.Platform (over, set, view, (&), (<&>), _1)
+import Lens.Micro.Platform (over, set, view, (&), (<&>), (^.), _1)
 import Prelude hiding (putStrLn)
-import Inquiry.Http (http)
 
 -- | Continue execution, updating the state if necessary.
 continue :: s -> EventM n (Next s)
@@ -58,7 +56,7 @@ prevHistoryItem' state =
   let reqs = Z.prev $ view requestHistory state
       current = Z.peek reqs
    in state
-        & over urlInput (setInput $ fromMaybe "http://" (current <&> view (_1 . reqUrl)))
+        & over urlInput (setInput $ fromMaybe (state ^. defaultUrl) (current <&> view (_1 . reqUrl)))
           . over currentMethod (\m -> maybe m (view (_1 . reqMethod)) current)
           . set requestHistory reqs
 
@@ -72,7 +70,7 @@ nextHistoryItem' state =
   let reqs = Z.next $ view requestHistory state
       current = Z.peek reqs
    in state
-        & over urlInput (setInput $ fromMaybe "http://" (current <&> view (_1 . reqUrl)))
+        & over urlInput (setInput $ fromMaybe (state ^. defaultUrl) (current <&> view (_1 . reqUrl)))
           . over currentMethod (\m -> maybe m (view (_1 . reqMethod)) current)
           . set requestHistory reqs
 
@@ -87,7 +85,7 @@ request state = do
   M.continue $
     state
       & set mode Normal
-        . over urlInput (setInput "http://")
+        . over urlInput (setInput $ state ^. defaultUrl)
         . over requestHistory (Z.prev . Z.end . Z.append (req, Just response))
 
 toggleRecents :: AppState -> EventM n (Next AppState)

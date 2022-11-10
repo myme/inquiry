@@ -13,9 +13,12 @@ import Control.Monad (void)
 import Data.Text (Text)
 import qualified Graphics.Vty as V
 import Inquiry.Commands (continue, cycleMethod, exMode, insertMode, nextHistoryItem, normalMode, prevHistoryItem, quit, request, toggleRecents)
-import Inquiry.Types (AppState (..), EditMode (..), defaultState, mode, urlInput)
+import Inquiry.Input (input)
+import Inquiry.Types (AppState (..), EditMode (..), mode, urlInput)
 import Inquiry.UI (drawUI)
+import Inquiry.Zipper (emptyZipper)
 import Lens.Micro.Platform (set, view)
+import Inquiry.Request (Method(GET))
 
 -- | Ex (Command) mode keymap
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
@@ -59,7 +62,7 @@ onEvent state (VtyEvent ev@(V.EvKey key _)) = do
 onEvent state _ = continue state
 
 app :: IO ()
-app = void $ M.defaultMain app' defaultState
+app = void $ M.defaultMain app' initialState
   where
     app' =
       M.App
@@ -68,4 +71,14 @@ app = void $ M.defaultMain app' defaultState
           M.appDraw = drawUI,
           M.appHandleEvent = onEvent,
           M.appStartEvent = return
+        }
+    defaultUrl = "https://example.com"
+    initialState =
+      AppState
+        { _currentMethod = GET,
+          _mode = Normal,
+          _requestHistory = emptyZipper,
+          _urlInput = input "urlInput" defaultUrl,
+          _defaultUrl = defaultUrl,
+          _showRecents = False
         }
