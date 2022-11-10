@@ -1,10 +1,10 @@
 module Inquiry.Test.Zipper where
 
-import Data.Foldable (toList, fold)
+import Data.Foldable (fold, toList)
 import Inquiry.Zipper
+import Lens.Micro.Platform hiding (set)
 import Test.Hspec hiding (focus)
 import Test.QuickCheck
-import Lens.Micro.Platform hiding (set)
 
 zipperTests :: SpecWith ()
 zipperTests = describe "Inquiry.Zipper" $ do

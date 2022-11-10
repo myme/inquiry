@@ -2,22 +2,23 @@
 
 module Inquiry.Test.Commands where
 
-import           Inquiry.Commands
-import           Inquiry.Input
-import           Inquiry.Request
-import           Inquiry.Types
+import Inquiry.Commands
+import Inquiry.Input
+import Inquiry.Request
+import Inquiry.Types
 import qualified Inquiry.Zipper as Z
-import           Lens.Micro.Platform ((^.), (.~), (%~), (&), view)
-import           Test.Hspec
+import Lens.Micro.Platform (view, (%~), (&), (.~), (^.))
+import Test.Hspec
 
 initialState :: AppState
-initialState = AppState
-               { _currentMethod = GET
-               , _mode = Normal
-               , _requestHistory = Z.emptyZipper
-               , _showRecents = False
-               , _urlInput = input "urlInput" "http://"
-               }
+initialState =
+  AppState
+    { _currentMethod = GET,
+      _mode = Normal,
+      _requestHistory = Z.emptyZipper,
+      _showRecents = False,
+      _urlInput = input "urlInput" "http://"
+    }
 
 commandsTests :: SpecWith ()
 commandsTests = describe "Inquiry.Commands" $ do
@@ -46,10 +47,11 @@ commandsTests = describe "Inquiry.Commands" $ do
       view currentMethod next `shouldBe` POST
 
     it "over zipper" $ do
-      let reqs = [ (Request GET "http://foo.com", Nothing)
-                 , (Request GET "http://bar.com", Nothing)
-                 , (Request GET "http://baz.com", Nothing)
-                 ]
+      let reqs =
+            [ (Request GET "http://foo.com", Nothing),
+              (Request GET "http://bar.com", Nothing),
+              (Request GET "http://baz.com", Nothing)
+            ]
           s0 = initialState & requestHistory .~ foldr Z.insert Z.emptyZipper (reverse reqs)
 
       let s1 = nextHistoryItem' s0
