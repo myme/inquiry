@@ -21,15 +21,13 @@ import qualified Brick.Main as M
 import Brick.Types (EventM, Next)
 import Control.Monad.IO.Class (liftIO)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text, pack, unpack)
-import Data.Text.IO (hGetContents, putStrLn)
 import Inquiry.Input (getInput, setInput)
-import Inquiry.Request (Request (..), Response (..), nextMethod, reqMethod, reqUrl)
+import Inquiry.Request (Request (..), nextMethod, reqMethod, reqUrl)
 import Inquiry.Types (AppState, EditMode (..), currentMethod, mode, requestHistory, showRecents, urlInput)
 import qualified Inquiry.Zipper as Z
-import Lens.Micro.Platform (over, set, view, (&), (<&>), (^.), _1)
-import System.Process (StdStream (..), proc, std_err, std_out, withCreateProcess)
+import Lens.Micro.Platform (over, set, view, (&), (<&>), _1)
 import Prelude hiding (putStrLn)
+import Inquiry.Http (http)
 
 -- | Continue execution, updating the state if necessary.
 continue :: s -> EventM n (Next s)
@@ -81,24 +79,16 @@ nextHistoryItem' state =
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem = M.continue . nextHistoryItem'
 
-curl :: Request -> IO Text
-curl req = do
-  let name = "curl"
-      args = ["-L", unpack $ req ^. reqUrl]
-      cmd = (proc name args) {std_out = CreatePipe, std_err = NoStream}
-  putStrLn $ pack $ concat ["Running command: `", name, unwords args, "`\n"]
-  withCreateProcess cmd $ \_ (Just stdout) _ _ -> hGetContents stdout
-
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)
 request state = do
   let req = Request (view currentMethod state) (getInput $ view urlInput state)
-  response <- liftIO $ curl req
+  response <- liftIO $ http req
   M.continue $
     state
       & set mode Normal
         . over urlInput (setInput "http://")
-        . over requestHistory (Z.prev . Z.end . Z.append (req, Just $ Response 200 response))
+        . over requestHistory (Z.prev . Z.end . Z.append (req, Just response))
 
 toggleRecents :: AppState -> EventM n (Next AppState)
 toggleRecents = M.continue . over showRecents not

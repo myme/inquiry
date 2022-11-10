@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 -- | Main Inquiry library entry point
 module Inquiry
   ( app,
@@ -15,11 +13,8 @@ import Control.Monad (void)
 import Data.Text (Text)
 import qualified Graphics.Vty as V
 import Inquiry.Commands (continue, cycleMethod, exMode, insertMode, nextHistoryItem, normalMode, prevHistoryItem, quit, request, toggleRecents)
-import Inquiry.Input (input)
-import Inquiry.Request (Method (..))
-import Inquiry.Types (AppState (..), EditMode (..), mode, urlInput)
+import Inquiry.Types (AppState (..), EditMode (..), defaultState, mode, urlInput)
 import Inquiry.UI (drawUI)
-import Inquiry.Zipper (emptyZipper)
 import Lens.Micro.Platform (set, view)
 
 -- | Ex (Command) mode keymap
@@ -64,7 +59,7 @@ onEvent state (VtyEvent ev@(V.EvKey key _)) = do
 onEvent state _ = continue state
 
 app :: IO ()
-app = void $ M.defaultMain app' initialState
+app = void $ M.defaultMain app' defaultState
   where
     app' =
       M.App
@@ -73,12 +68,4 @@ app = void $ M.defaultMain app' initialState
           M.appDraw = drawUI,
           M.appHandleEvent = onEvent,
           M.appStartEvent = return
-        }
-    initialState =
-      AppState
-        { _currentMethod = GET,
-          _mode = Normal,
-          _requestHistory = emptyZipper,
-          _urlInput = input "urlInput" "http://",
-          _showRecents = False
         }

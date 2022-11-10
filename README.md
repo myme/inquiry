@@ -1,3 +1,3 @@
 # inquiry
 
-Inquiry is a REST client with a command line interface.
+`inquiry` is a `REST` client with a command line TUI.

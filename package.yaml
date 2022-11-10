@@ -8,7 +8,6 @@ copyright: "2018-2022 Martin Myrseth"
 
 extra-source-files:
   - README.md
-  - ChangeLog.md
 
 description: Please see the README on GitHub at <https://github.com/myme/inquiry#readme>
 
@@ -19,10 +18,20 @@ ghc-options:
   - -Wall
   - -Werror
 
+default-extensions:
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - NamedFieldPuns
+  - OverloadedStrings
+  - TupleSections
+
 library:
   source-dirs: src
   dependencies:
     - brick
+    - http-client
+    - http-client-tls
+    - http-types
     - microlens-platform
     - process
     - text
