@@ -12,6 +12,8 @@ module Inquiry.Commands
     prevHistoryItem',
     request,
     toggleRecents,
+    prevWidget,
+    nextWidget,
   )
 where
 
@@ -22,7 +24,7 @@ import Data.Maybe (fromMaybe)
 import Inquiry.Http (http)
 import Inquiry.Input (getInput, setInput)
 import Inquiry.Request (Request (..), nextMethod, reqMethod, reqUrl)
-import Inquiry.Types (AppState, EditMode (..), currentMethod, defaultUrl, mode, requestHistory, showRecents, urlInput)
+import Inquiry.Types (AppState, EditMode (..), currentMethod, defaultUrl, mode, requestHistory, showRecents, urlInput, focusedElement)
 import qualified Inquiry.Zipper as Z
 import Lens.Micro.Platform (over, set, view, (&), (<&>), (^.), _1)
 import Prelude hiding (putStrLn)
@@ -76,6 +78,18 @@ nextHistoryItem' state =
 
 nextHistoryItem :: AppState -> EventM n (Next AppState)
 nextHistoryItem = M.continue . nextHistoryItem'
+
+-- | Focus the next UI widget
+nextWidget :: AppState -> EventM n (Next AppState)
+nextWidget state
+  | state ^. focusedElement == maxBound = M.continue $ state & set focusedElement minBound
+  | otherwise = M.continue $ state & over focusedElement succ
+
+-- | Focus the previous UI widget
+prevWidget :: AppState -> EventM n (Next AppState)
+prevWidget state
+  | state ^. focusedElement == minBound = M.continue $ state & set focusedElement maxBound
+  | otherwise = M.continue $ state & over focusedElement pred
 
 -- | Invoke a request to the current navigator item.
 request :: AppState -> EventM n (Next AppState)

@@ -12,13 +12,26 @@ import Control.Applicative ((<|>))
 import Control.Monad (void)
 import Data.Text (Text)
 import qualified Graphics.Vty as V
-import Inquiry.Commands (continue, cycleMethod, exMode, insertMode, nextHistoryItem, normalMode, prevHistoryItem, quit, request, toggleRecents)
+import Inquiry.Commands
+  ( continue,
+    cycleMethod,
+    exMode,
+    insertMode,
+    nextHistoryItem,
+    nextWidget,
+    normalMode,
+    prevHistoryItem,
+    prevWidget,
+    quit,
+    request,
+    toggleRecents,
+  )
 import Inquiry.Input (input)
-import Inquiry.Types (AppState (..), EditMode (..), mode, urlInput)
+import Inquiry.Request (Method (GET))
+import Inquiry.Types (AppState (..), EditMode (..), FocusElement (..), mode, urlInput)
 import Inquiry.UI (drawUI)
 import Inquiry.Zipper (emptyZipper)
 import Lens.Micro.Platform (set, view)
-import Inquiry.Request (Method(GET))
 
 -- | Ex (Command) mode keymap
 exMap :: [(V.Key, AppState -> EventM n (Next AppState))]
@@ -43,7 +56,9 @@ normalMap =
     (V.KChar 'm', cycleMethod),
     (V.KChar 'n', nextHistoryItem),
     (V.KChar 'p', prevHistoryItem),
-    (V.KChar 'r', toggleRecents)
+    (V.KChar 'r', toggleRecents),
+    (V.KChar 'j', nextWidget),
+    (V.KChar 'k', prevWidget)
   ]
 
 onEvent :: AppState -> BrickEvent Text e -> EventM Text (Next AppState)
@@ -80,5 +95,6 @@ app = void $ M.defaultMain app' initialState
           _requestHistory = emptyZipper,
           _urlInput = input "urlInput" defaultUrl,
           _defaultUrl = defaultUrl,
-          _showRecents = False
+          _showRecents = False,
+          _focusedElement = UrlField
         }

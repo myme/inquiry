@@ -3,12 +3,14 @@
 module Inquiry.Types
   ( AppState (..),
     EditMode (..),
+    FocusElement (..),
     currentMethod,
     requestHistory,
     urlInput,
     mode,
     showRecents,
     defaultUrl,
+    focusedElement,
   )
 where
 
@@ -18,6 +20,7 @@ import Inquiry.Request (Method, RequestHistory)
 import Lens.Micro.Platform (makeLenses)
 
 data EditMode = Ex | Normal | Insert deriving (Eq, Show)
+data FocusElement = UrlField | HeadersField | ResponseField deriving (Bounded, Enum, Eq, Show)
 
 data AppState = AppState
   { _currentMethod :: Method,
@@ -25,7 +28,8 @@ data AppState = AppState
     _urlInput :: E.Editor Text Text,
     _defaultUrl :: Text,
     _mode :: EditMode,
-    _showRecents :: Bool
+    _showRecents :: Bool,
+    _focusedElement :: FocusElement
   }
   deriving (Show)
 

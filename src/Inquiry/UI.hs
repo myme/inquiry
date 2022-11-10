@@ -15,7 +15,7 @@ import Data.Foldable (toList)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text, unpack)
 import Inquiry.Request (Method (..), Request (..), RequestHistory, Response, reqMethod, reqUrl, resBody)
-import Inquiry.Types (AppState, EditMode (..), mode, requestHistory, showRecents, urlInput)
+import Inquiry.Types (AppState, EditMode (..), FocusElement (ResponseField, UrlField, HeadersField), focusedElement, mode, requestHistory, showRecents, urlInput)
 import Inquiry.Zipper (emptyZipper, focus)
 import Lens.Micro.Platform ((^.))
 
@@ -34,8 +34,13 @@ drawRecents recent =
     list = reverse $ toList recent
     reqRepr (r, _) = show (r ^. reqMethod) <> " " <> unpack (r ^. reqUrl)
 
-drawResponse :: Maybe Response -> Widget a
-drawResponse response' = borderWithLabel (txt "Response") $ padRight Max $ padBottom Max text
+focusLabel :: AppState -> FocusElement -> Text -> Widget a
+focusLabel state target t
+  | state ^. focusedElement == target = txt $ "[ " <> t <> " ]"
+  | otherwise = txt t
+
+drawResponse :: Widget a -> Maybe Response -> Widget a
+drawResponse label response' = borderWithLabel label $ padRight Max $ padBottom Max text
   where
     text = case response' of
       Nothing -> center $ txt "No response"
@@ -53,13 +58,14 @@ drawUI state = [recents, main]
       withBorderStyle unicode $
         navigator
           <=> headers
-          <=> drawResponse response
+          <=> drawResponse (label ResponseField "Response") response
           <=> status
-    navigator = borderWithLabel (txt "inQuiry") $ method <+> padRight Max editor
+    label = focusLabel state
+    navigator = borderWithLabel (label UrlField "inQuiry") $ method <+> padRight Max editor
     inInsert = state ^. mode == Insert
     editor = E.renderEditor (foldr ((<+>) . txt) emptyWidget) inInsert (state ^. urlInput)
     method = str $ show (request ^. reqMethod) <> ": "
-    headers = borderWithLabel (txt "Headers") $ padRight Max $ txt "Empty..."
+    headers = borderWithLabel (label HeadersField "Headers") $ padRight Max $ txt "Empty..."
     status = case state ^. mode of
       Ex -> txt ":"
       Insert -> txt "-- INSERT --"
