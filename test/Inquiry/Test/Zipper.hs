@@ -1,8 +1,8 @@
 module Inquiry.Test.Zipper where
 
-import Data.Foldable (toList)
+import Data.Foldable (toList, fold)
 import Inquiry.Zipper
-import Test.Hspec
+import Test.Hspec hiding (focus)
 import Test.QuickCheck
 import Lens.Micro.Platform hiding (set)
 
@@ -123,4 +123,4 @@ zipperTests = describe "Inquiry.Zipper" $ do
 
     it "folds to insert order" $ property $ \x -> do
       let zipper = foldr insert emptyZipper (reverse x :: [String])
-      foldr (<>) mempty zipper == foldr (<>) mempty x
+      fold zipper == fold x
