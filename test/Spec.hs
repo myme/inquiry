@@ -1,8 +1,1 @@
-import Inquiry.Test.Commands
-import Inquiry.Test.Zipper
-import Test.Hspec
-
-main :: IO ()
-main = hspec $ do
-  commandsTests
-  zipperTests
+{-# OPTIONS_GHC -F -pgmF hspec-discover #-}

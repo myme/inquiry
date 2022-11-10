@@ -1,4 +1,4 @@
-module Inquiry.Test.Zipper where
+module Inquiry.Test.ZipperSpec where
 
 import Data.Foldable (fold, toList)
 import Inquiry.Zipper
@@ -6,8 +6,8 @@ import Lens.Micro.Platform hiding (set)
 import Test.Hspec hiding (focus)
 import Test.QuickCheck
 
-zipperTests :: SpecWith ()
-zipperTests = describe "Inquiry.Zipper" $ do
+spec :: SpecWith ()
+spec = describe "Inquiry.Zipper" $ do
   describe "tests" $ do
     it "emptyZipper is empty" $
       peek emptyZipper `shouldBe` (Nothing :: Maybe Int)

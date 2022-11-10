@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Inquiry.Test.Commands where
+module Inquiry.Test.CommandsSpec where
 
 import Inquiry.Commands
 import Inquiry.Input
@@ -20,8 +20,8 @@ initialState =
       _urlInput = input "urlInput" "http://"
     }
 
-commandsTests :: SpecWith ()
-commandsTests = describe "Inquiry.Commands" $ do
+spec :: SpecWith ()
+spec = describe "Inquiry.Commands" $ do
   describe "history navigation" $ do
     it "empty history is emptyZipper" $ do
       let state = prevHistoryItem' initialState
