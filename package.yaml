@@ -1,19 +1,19 @@
-name:                inquiry
-version:             0.1.0.0
-github:              "myme/inquiry"
-license:             BSD3
-author:              "Martin Myrseth"
-maintainer:          "mm@myme.no"
-copyright:           "2018-2022 Martin Myrseth"
+name: inquiry
+version: 0.1.0.0
+github: "myme/inquiry"
+license: BSD3
+author: "Martin Myrseth"
+maintainer: "mm@myme.no"
+copyright: "2018-2022 Martin Myrseth"
 
 extra-source-files:
-- README.md
-- ChangeLog.md
+  - README.md
+  - ChangeLog.md
 
-description:         Please see the README on GitHub at <https://github.com/myme/inquiry#readme>
+description: Please see the README on GitHub at <https://github.com/myme/inquiry#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+  - base >= 4.7 && < 5
 
 ghc-options:
   - -Wall
@@ -31,25 +31,25 @@ library:
 
 executables:
   inquiry:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - inquiry
+      - inquiry
 
 tests:
   inquiry-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - hspec
-    - inquiry
-    - microlens-platform
-    - QuickCheck
+      - hspec
+      - inquiry
+      - microlens-platform
+      - QuickCheck
